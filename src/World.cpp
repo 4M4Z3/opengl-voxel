@@ -15,8 +15,8 @@ World::World() {
     std::uniform_int_distribution<> dis(0, std::numeric_limits<int>::max());
     seed = dis(gen);
 
-    for (int x = -2; x < 2; ++x) {
-        for (int z = -2; z < 2; ++z) {
+    for (int x = -4; x < 4; ++x) {
+        for (int z = -4; z < 4; ++z) {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 

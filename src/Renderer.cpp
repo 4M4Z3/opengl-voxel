@@ -37,8 +37,8 @@ void Renderer::drawTriangles(const std::vector<Vertex>& vertices) {
 }
 
 void Renderer::render() {
-    // camera.pos.z += 0.1;
-    // camera.pos.x += 0.1;
+    camera.pos.z += 0.1;
+    camera.pos.x += 0.1;
     glClearColor(0.5f, 0.7f, 1.0f, 1.0f); 
 
     glClear(GL_COLOR_BUFFER_BIT);

@@ -91,7 +91,9 @@ Block Chunk::generateBlock(int x, int y, int z) {
     if (y < 20) {
         return STONE;
     }
-    else if (y < 20 + 13 * sin(x*0.2) * sin(z*0.2)) {
+    else if (y < 20 + 7 * sin(x*0.2) * sin(z*0.2)
+    + 13 * sin(-x*0.033) + 12* cos(-z*0.05)
+    ) {
             return STONE;
     }
     return AIR;
