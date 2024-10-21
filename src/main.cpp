@@ -109,7 +109,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = createWindow(960, 540, "Voxel Game");
+    GLFWwindow* window = createWindow(1000, 800, "Voxel Game");
     if (!window) {
         return -1;
     }

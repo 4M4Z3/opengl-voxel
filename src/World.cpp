@@ -15,22 +15,38 @@ World::World() {
     std::uniform_int_distribution<> dis(0, std::numeric_limits<int>::max());
     seed = dis(gen);
 
-for (int x = -2; x < 4; ++x) {
-    for (int z = -2; z < 4; ++z) {
-        Chunk c = Chunk(x * 16, z * 16);
-        chunks.insert({{x, z}, c});
+    for (int x = -2; x < 2; ++x) {
+        for (int z = -2; z < 2; ++z) {
+            int chunkX = x * 16;
+            int chunkZ = z * 16;
+
+            Chunk c = Chunk(chunkX, chunkZ, this);
+            chunks.insert({{chunkX, chunkZ}, c});
+        }
     }
-}
+
+    for (auto& [key, chunk] : chunks) {
+        chunk.initializeMesh();
+    }
 }
 
 Block World::getBlock(int x, int y, int z) {
-    int chunkX = x - (x % 16);
-    int chunkY = z - (z % 16);
+    int chunkX = (x / 16) * 16;
+    int chunkZ = (z / 16) * 16;
 
-    auto it = chunks.find({chunkX, chunkY});
+    auto it = chunks.find({chunkX, chunkZ});
     if (it == chunks.end()) {
+        return NULLBLOCK; 
+    }
+
+    int localX = x % 16;
+    int localZ = z % 16;
+    if (localX < 0) localX += 16; 
+    if (localZ < 0) localZ += 16;
+
+    if (y < 0 || y >= 256) {
         return NULLBLOCK;
     }
 
-    return it->second.chunk[x][y][z];
+    return it->second.chunk[localX][y][localZ];
 }

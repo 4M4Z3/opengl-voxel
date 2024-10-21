@@ -3,21 +3,22 @@
 #include "Block.h"
 #include "Blocknames.h"
 #include "Triangle.h"
+#include "World.h"
 #include <iostream>
 
 Chunk::Chunk() {
-    seed = 0;
-    xOffset = 0;
-    zOffset = 0;
-    generateChunk();
-    initializeMesh();
+    // seed = 0;
+    // xOffset = 0;
+    // zOffset = 0;
+    // generateChunk();
+    // initializeMesh(World& world);
 }
 
-Chunk::Chunk(int xOffset, int zOffset) {
+Chunk::Chunk(int xOffset, int zOffset, World *world) {
     this->xOffset = xOffset;
     this->zOffset = zOffset;
+    this->world = world;
     generateChunk();
-    initializeMesh();
 }
 
 void Chunk::initializeMesh() {
@@ -28,44 +29,53 @@ void Chunk::initializeMesh() {
                     float baseX = x + xOffset;
                     float baseY = y;
                     float baseZ = z + zOffset;
-//test
+
                     Vertex vertices[8] = {
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f}, // Bottom-left-back (darker grey)
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f}, // Bottom-right-back (darker grey)
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f}, // Top-right-back (darker grey)
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 0.4f, 0.4f, 0.4f}, // Top-left-back (darker grey)
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}, // Bottom-left-front (darker grey)
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}, // Bottom-right-front (darker grey)
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}, // Top-right-front (darker grey)
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}  // Top-left-front (darker grey)
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 0.4f, 0.4f, 0.4f},
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}
                     };
 
-                    triangles.push_back({vertices[4], vertices[5], vertices[6]});
-                    triangles.push_back({vertices[4], vertices[6], vertices[7]});
+                    // Check if each face is exposed to air, considering neighboring chunks if necessary
+                    if (world->getBlock(xOffset + x, y, zOffset + z + 1).type == AIR) {
+                        triangles.push_back({vertices[4], vertices[5], vertices[6]});
+                        triangles.push_back({vertices[4], vertices[6], vertices[7]});
+                    }
 
-                    triangles.push_back({vertices[0], vertices[2], vertices[1]});
-                    triangles.push_back({vertices[0], vertices[3], vertices[2]});
+                    if (world->getBlock(xOffset + x, y, zOffset + z - 1).type == AIR) {
+                        triangles.push_back({vertices[0], vertices[2], vertices[1]});
+                        triangles.push_back({vertices[0], vertices[3], vertices[2]});
+                    }
 
-                    triangles.push_back({vertices[0], vertices[7], vertices[4]});
-                    triangles.push_back({vertices[0], vertices[3], vertices[7]});
+                    if (world->getBlock(xOffset + x - 1, y, zOffset + z).type == AIR) {
+                        triangles.push_back({vertices[0], vertices[7], vertices[4]});
+                        triangles.push_back({vertices[0], vertices[3], vertices[7]});
+                    }
 
-                    // Right face (vertices 1, 5, 6, 2)
-                    triangles.push_back({vertices[1], vertices[6], vertices[5]});
-                    triangles.push_back({vertices[1], vertices[2], vertices[6]});
+                    if (world->getBlock(xOffset + x + 1, y, zOffset + z).type == AIR) {
+                        triangles.push_back({vertices[1], vertices[6], vertices[5]});
+                        triangles.push_back({vertices[1], vertices[2], vertices[6]});
+                    }
 
-                    // Top face (vertices 3, 7, 6, 2)
-                    triangles.push_back({vertices[3], vertices[6], vertices[7]});
-                    triangles.push_back({vertices[3], vertices[2], vertices[6]});
+                    if (world->getBlock(xOffset + x, y + 1, zOffset + z).type == AIR) {
+                        triangles.push_back({vertices[3], vertices[6], vertices[7]});
+                        triangles.push_back({vertices[3], vertices[2], vertices[6]});
+                    }
 
-                    // Bottom face (vertices 0, 4, 5, 1)
-                    triangles.push_back({vertices[0], vertices[5], vertices[4]});
-                    triangles.push_back({vertices[0], vertices[1], vertices[5]});
+                    if (world->getBlock(xOffset + x, y - 1, zOffset + z).type == AIR) {
+                        triangles.push_back({vertices[0], vertices[5], vertices[4]});
+                        triangles.push_back({vertices[0], vertices[1], vertices[5]});
+                    }
                 }
             }
         }
     }
 }
-
 
 void Chunk::generateChunk() {
     for (int x = 0; x < 16; ++x) {
@@ -78,8 +88,11 @@ void Chunk::generateChunk() {
 }
 
 Block Chunk::generateBlock(int x, int y, int z) {
-    if (y < 30) {
+    if (y < 20) {
         return STONE;
+    }
+    else if (y < 20 + 13 * sin(x*0.2) * sin(z*0.2)) {
+            return STONE;
     }
     return AIR;
 }
