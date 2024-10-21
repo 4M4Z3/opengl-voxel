@@ -48,7 +48,6 @@ unsigned int compileShader(unsigned int type, const char* source) {
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    // Error handling
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -65,20 +64,33 @@ unsigned int createShaderProgram() {
         #version 330 core
         layout(location = 0) in vec3 aPos;   // Position
         layout(location = 1) in vec3 aColor; // Color
+        layout(location = 2) in vec2 aTexCoord; // Texture coordinates
+
         out vec3 ourColor;
+        out vec2 TexCoord;
+
         void main() {
-            gl_Position = vec4(aPos, 1.0); // Use aPos.z for depth
+            gl_Position = vec4(aPos, 1.0);
             ourColor = aColor;
+            TexCoord = aTexCoord; // Pass texture coordinates to the fragment shader
         }
     )";
 
     const char* fragmentShaderSource = R"(
+        // Fragment Shader (fragment_shader.glsl)
         #version 330 core
-        in vec3 ourColor;
+
+        in vec2 TexCoord;  // The texture coordinates passed from the vertex shader
+
         out vec4 FragColor;
+
+        uniform sampler2D texture1; // The texture sampler
+
         void main() {
-            FragColor = vec4(ourColor, 1.0);
+            // Output the texture color directly
+            FragColor = texture(texture1, TexCoord);
         }
+
     )";
 
     unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
@@ -89,7 +101,6 @@ unsigned int createShaderProgram() {
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // Error handling
     int success;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
@@ -122,6 +133,10 @@ int main() {
     Renderer renderer(camera, world);
 
     unsigned int shaderProgram = createShaderProgram();
+
+    // Set the texture uniform to use texture unit 0
+    glUseProgram(shaderProgram);
+    glUniform1i(glGetUniformLocation(shaderProgram, "textureAtlas"), 0);
 
     // Main render loop
     while (!glfwWindowShouldClose(window)) {

@@ -7,7 +7,7 @@
 #include "Vertex.h"
 
 Camera::Camera() {
-    pos = {50, 70, 50};
+    pos = {0, 42, 0};
     rot = {-50, 135, 0};
     fov = 120;
 }

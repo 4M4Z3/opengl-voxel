@@ -2,8 +2,7 @@
 #define BLOCKNAMES_H
 
 enum BlockType {
-    NULLBLOCK = -1,
-    AIR,
+    AIR = 0,
     STONE,
     DIRT,
     GRASS,

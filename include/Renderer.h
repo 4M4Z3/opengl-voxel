@@ -1,22 +1,25 @@
+// Renderer.h
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <vector>
 #include "Camera.h"
-#include "Chunk.h"
 #include "World.h"
 #include "Vertex.h"
+#include <GL/glew.h>
 
 class Renderer {
-    Camera camera;
-    World world;
-    std::vector<Vertex> vertices;
-    unsigned int VAO, VBO; // Add VAO and VBO as member variables
-
 public:
     Renderer();
     Renderer(Camera& camera, World& world);
-    void drawTriangles(const std::vector<Vertex>& vertices);
     void render();
+    void drawTriangles(const std::vector<Vertex>& vertices);
+
+private:
+    GLuint VAO, VBO, textureID;
+    Camera camera;
+    World world;
+    GLuint loadTexture(const char* filePath);
 };
 
 #endif // RENDERER_H

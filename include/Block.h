@@ -9,6 +9,7 @@ public:
 
     Block();
     Block(int type);
+    
 };
 
 #endif // BLOCK_H

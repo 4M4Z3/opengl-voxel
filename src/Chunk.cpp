@@ -1,17 +1,13 @@
-// Chunk.cpp
 #include "Chunk.h"
-#include "Block.h"
 #include "Blocknames.h"
+#include "Block.h"
+#include "TextureMapping.h"
 #include "Triangle.h"
 #include "World.h"
 #include <iostream>
 
 Chunk::Chunk() {
-    // seed = 0;
-    // xOffset = 0;
-    // zOffset = 0;
-    // generateChunk();
-    // initializeMesh(World& world);
+    // Default constructor
 }
 
 Chunk::Chunk(int xOffset, int zOffset, World *world) {
@@ -25,23 +21,27 @@ void Chunk::initializeMesh() {
     for (int x = 0; x < 16; ++x) {
         for (int y = 0; y < 256; ++y) {
             for (int z = 0; z < 16; ++z) {
-                if (chunk[x][y][z].type == STONE) {
+                int blockType = chunk[x][y][z].type; // Use the type field directly
+                if (blockType != AIR) {
                     float baseX = x + xOffset;
                     float baseY = y;
                     float baseZ = z + zOffset;
 
-                    Vertex vertices[8] = {
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 0.4f, 0.4f, 0.4f},
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}
+                    // Get texture coordinates for this block type
+                    BlockTexture blockTexture = getBlockTexture(blockType); 
+
+Vertex vertices[8] = {
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMin, blockTexture.side.vMin}, // 0
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMax, blockTexture.side.vMin}, // 1
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMax, blockTexture.side.vMax}, // 2
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMin, blockTexture.side.vMax}, // 3
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMin, blockTexture.side.vMin}, // 4
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMax, blockTexture.side.vMin}, // 5
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMax, blockTexture.side.vMax}, // 6
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 1.0f, 1.0f, 1.0f, blockTexture.side.uMin, blockTexture.side.vMax}  // 7
                     };
 
-                    // Check if each face is exposed to air, considering neighboring chunks if necessary
+                    // Set up triangles for each face with the appropriate texture
                     if (world->getBlock(xOffset + x, y, zOffset + z + 1).type == AIR) {
                         triangles.push_back({vertices[4], vertices[5], vertices[6]});
                         triangles.push_back({vertices[4], vertices[6], vertices[7]});
@@ -89,12 +89,11 @@ void Chunk::generateChunk() {
 
 Block Chunk::generateBlock(int x, int y, int z) {
     if (y < 20) {
-        return STONE;
+        return Block(STONE);
     }
-    else if (y < 20 + 7 * sin(x*0.2) * sin(z*0.2)
-    + 13 * sin(-x*0.033) + 12* cos(-z*0.05)
-    ) {
-            return STONE;
+    else if (y < 20 + 7 * sin(x * 0.2) * sin(z * 0.2)
+    + 13 * sin(-x * 0.033) + 12 * cos(-z * 0.05)) {
+        return Block(STONE);
     }
-    return AIR;
+    return Block(AIR);
 }

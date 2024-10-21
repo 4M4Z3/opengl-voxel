@@ -1,7 +1,6 @@
 #include "World.h"
 #include "Block.h"
 #include "Vertex.h"
-#include "Blocknames.h"
 #include <random>
 #include <vector>
 
@@ -36,7 +35,7 @@ Block World::getBlock(int x, int y, int z) {
 
     auto it = chunks.find({chunkX, chunkZ});
     if (it == chunks.end()) {
-        return NULLBLOCK; 
+        return -1; 
     }
 
     int localX = x % 16;
@@ -45,7 +44,7 @@ Block World::getBlock(int x, int y, int z) {
     if (localZ < 0) localZ += 16;
 
     if (y < 0 || y >= 256) {
-        return NULLBLOCK;
+        return -1;
     }
 
     return it->second.chunk[localX][y][localZ];
