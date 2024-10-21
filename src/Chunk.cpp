@@ -21,6 +21,7 @@ Chunk::Chunk(int xOffset, int zOffset, World *world) {
     generateChunk();
 }
 
+
 void Chunk::initializeMesh() {
     for (int x = 0; x < 16; ++x) {
         for (int y = 0; y < 256; ++y) {
@@ -30,18 +31,22 @@ void Chunk::initializeMesh() {
                     float baseY = y;
                     float baseZ = z + zOffset;
 
+                    float texMinU = 0.0f; // Left side of the texture region
+                    float texMaxU = 1.0f; // Right side of the texture region
+                    float texMinV = 0.0f; // Bottom side of the texture region
+                    float texMaxV = 1.0f; // Top side of the texture region
+
                     Vertex vertices[8] = {
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 0.4f, 0.4f, 0.4f},
-                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f},
-                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f, texMinU, texMinV}, // 0
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f, texMaxU, texMinV}, // 1
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f, texMaxU, texMaxV}, // 2
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 0.0f, 0.4f, 0.4f, 0.4f, texMinU, texMaxV}, // 3
+                        {baseX + 0.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f, texMinU, texMinV}, // 4
+                        {baseX + 1.0f, baseY + 0.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f, texMaxU, texMinV}, // 5
+                        {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f, texMaxU, texMaxV}, // 6
+                        {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f, texMinU, texMaxV}  // 7
                     };
 
-                    // Check if each face is exposed to air, considering neighboring chunks if necessary
                     if (world->getBlock(xOffset + x, y, zOffset + z + 1).type == AIR) {
                         triangles.push_back({vertices[4], vertices[5], vertices[6]});
                         triangles.push_back({vertices[4], vertices[6], vertices[7]});

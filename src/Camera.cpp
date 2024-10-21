@@ -7,7 +7,7 @@
 #include "Vertex.h"
 
 Camera::Camera() {
-    pos = {50, 70, 50};
+    pos = {50, 40, 50};
     rot = {-50, 135, 0};
     fov = 120;
 }
@@ -85,14 +85,18 @@ std::vector<Triangle>& Camera::projectionMatrix(World& world) {
                 perspectiveY = (perspectiveY + 1.0f) / 2.0f * 2.0f - 1.0f;
 
                 float zNormalized = (rotatedZ - nearPlane) / (farPlane - nearPlane);
-                float perspectiveZ = zNormalized * 2.0f - 1.0f;                     
+                float perspectiveZ = zNormalized * 2.0f - 1.0f;
+
+                // Copy texture coordinates from the original vertex
+                float texU = vertex.u;
+                float texV = vertex.v;
 
                 if (k == 0) {
-                    transformedTriangle.v0 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b};
+                    transformedTriangle.v0 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b, texU, texV};
                 } else if (k == 1) {
-                    transformedTriangle.v1 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b};
+                    transformedTriangle.v1 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b, texU, texV};
                 } else {
-                    transformedTriangle.v2 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b};
+                    transformedTriangle.v2 = {perspectiveX, perspectiveY, perspectiveZ, vertex.r, vertex.g, vertex.b, texU, texV};
                 }
             }
 
