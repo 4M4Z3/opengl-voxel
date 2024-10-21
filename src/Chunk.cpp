@@ -28,7 +28,7 @@ void Chunk::initializeMesh() {
                     float baseX = x + xOffset;
                     float baseY = y;
                     float baseZ = z + zOffset;
-
+//test
                     Vertex vertices[8] = {
                         {baseX + 0.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f}, // Bottom-left-back (darker grey)
                         {baseX + 1.0f, baseY + 0.0f, baseZ + 0.0f, 0.3f, 0.3f, 0.3f}, // Bottom-right-back (darker grey)
