@@ -1,1 +1,3 @@
 # opengl-voxel
+
+make run
