@@ -39,7 +39,7 @@ void Chunk::initializeMesh() {
                         {baseX + 1.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}, // Top-right-front (darker grey)
                         {baseX + 0.0f, baseY + 1.0f, baseZ + 1.0f, 0.3f, 0.3f, 0.3f}  // Top-left-front (darker grey)
                     };
-std::cout << "test";
+
                     triangles.push_back({vertices[4], vertices[5], vertices[6]});
                     triangles.push_back({vertices[4], vertices[6], vertices[7]});
 
