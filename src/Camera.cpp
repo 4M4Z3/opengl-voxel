@@ -7,8 +7,8 @@
 #include "Vertex.h"
 
 Camera::Camera() {
-    pos = {50, 40, 50};
-    rot = {-50, 135, 0};
+    pos = {30, 35, 30};
+    rot = {-50, -135, 0};
     fov = 120;
 }
 
@@ -34,7 +34,7 @@ std::vector<Triangle>& Camera::projectionMatrix(World& world) {
     float cosRoll = cos(rollRad);
     float sinRoll = sin(rollRad);
 
-    float aspectRatio = 1000.0f / 800.0f;
+    float aspectRatio = 1400.0f / 800.0f;
     float fovRad = toRadians(fov);
     float tanHalfFov = tan(fovRad / 2.0f);
 

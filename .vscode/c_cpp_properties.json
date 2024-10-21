@@ -4,7 +4,10 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/homebrew/Cellar/glew/2.2.0_1/include"
+                "/opt/homebrew/Cellar/glew/2.2.0_1/include",
+                "/Library/Developer/CommandLineTools/usr/include/c++/v1", 
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
+                "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
             ],
             "defines": [],
             "macFrameworkPath": [

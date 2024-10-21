@@ -53,8 +53,8 @@ void Renderer::render() {
     double fps = 1.0 / deltaTime;
     std::cout << "FPS: " << fps << std::endl;
 
-    camera.pos.z += 0.1;
-    camera.pos.x += 0.1;
+    // camera.pos.z += 0.1;
+    // camera.pos.x += 0.1;
     glClearColor(0.5f, 0.7f, 1.0f, 1.0f); 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

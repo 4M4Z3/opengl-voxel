@@ -6,10 +6,11 @@
 #include <vector>
 #include <map>
 #include "Chunk.h"
+#include "TextureMap.h"
 
 class World {
     int seed;
-    
+
 public:
     World(int seed);
     World();
@@ -22,6 +23,11 @@ public:
 
     std::unordered_map<std::pair<int, int>, Chunk, pair_hash> chunks;
     Block getBlock(int x, int y, int z);
+
+    TextureMap textureMap; // Add the TextureMap as a member
+
+    // Declaration for initializeTextureMap
+    void initializeTextureMap(); 
 };
 
 #endif // WORLD_H

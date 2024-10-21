@@ -150,7 +150,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = createWindow(1000, 800, "Voxel Game");
+    GLFWwindow* window = createWindow(1400, 800, "Voxel Game");
     if (!window) {
         return -1;
     }
@@ -169,15 +169,12 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Set the active shader program
         glUseProgram(shaderProgram);
 
-        // Set the texture uniform and bind the texture
-        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0); // Set the texture uniform to texture unit 0
+        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0); 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        // Render the scene
         renderer.render();
 
         glfwSwapBuffers(window);
