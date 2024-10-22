@@ -4,9 +4,9 @@
 #include "Player.h"
 
 class Movement {
-    public:
+public:
+    Movement(Player& player, float speed);
 
-    Movement(Player &player);
     void moveForward();
     void moveBackward();
     void moveRight();
@@ -21,11 +21,10 @@ class Movement {
 
     void updateVectors(float deltaTime);
 
-    void moveCamera(float dx, float dy);
-
-    Player &player;
-
+private:
+    Player& player;
+    float speed; 
+    float verticalSpeed;
 };
-
 
 #endif // MOVEMENT_H

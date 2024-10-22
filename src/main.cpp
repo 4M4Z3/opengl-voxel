@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "Renderer.h"
 #include <iostream>
-#include <sstream>
+#include <unordered_map>
 #include "Vertex.h"
 #include "Player.h"
 #include "World.h"
@@ -77,7 +77,6 @@ unsigned int compileShader(unsigned int type, const char* source) {
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    // Error handling
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -92,9 +91,9 @@ unsigned int compileShader(unsigned int type, const char* source) {
 unsigned int createShaderProgram() {
     const char* vertexShaderSource = R"(
         #version 330 core
-        layout(location = 0) in vec3 aPos;   // Position
-        layout(location = 1) in vec3 aColor; // Color
-        layout(location = 2) in vec2 aTexCoord; // Texture coordinates
+        layout(location = 0) in vec3 aPos;
+        layout(location = 1) in vec3 aColor;
+        layout(location = 2) in vec2 aTexCoord;
 
         out vec3 ourColor;
         out vec2 TexCoord;
@@ -129,7 +128,6 @@ unsigned int createShaderProgram() {
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // Error handling
     int success;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
@@ -144,45 +142,16 @@ unsigned int createShaderProgram() {
     return shaderProgram;
 }
 
-double lastX = 0.0;
-double lastY = 0.0;
-bool firstMouse = true;
+bool windowFocused = true;
+std::unordered_map<int, bool> keyStates;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    Movement* movement = static_cast<Movement*>(glfwGetWindowUserPointer(window));
-
-    if (movement && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-        switch (key) {
-            case GLFW_KEY_W:
-                std::cout << "W key pressed" << std::endl;
-                movement->moveForward();
-                break;
-            case GLFW_KEY_A:
-                std::cout << "A key pressed" << std::endl;
-                movement->moveLeft();
-                break;
-            case GLFW_KEY_S:
-                std::cout << "S key pressed" << std::endl;
-                movement->moveBackward();
-                break;
-            case GLFW_KEY_D:
-                std::cout << "D key pressed" << std::endl;
-                movement->moveRight();
-                break;
-            case GLFW_KEY_SPACE:
-                std::cout << "Space key pressed" << std::endl;
-                movement->moveUp();
-                break;
-            case GLFW_KEY_LEFT_SHIFT:
-            case GLFW_KEY_RIGHT_SHIFT:
-                std::cout << "Shift key pressed" << std::endl;
-                movement->moveDown();
-                break;
-        }
+    if (action == GLFW_PRESS) {
+        keyStates[key] = true;
+    } else if (action == GLFW_RELEASE) {
+        keyStates[key] = false;
     }
 }
-
-bool windowFocused = true;
 
 void windowFocusCallback(GLFWwindow* window, int focused) {
     windowFocused = focused;
@@ -190,7 +159,6 @@ void windowFocusCallback(GLFWwindow* window, int focused) {
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     Movement* movement = static_cast<Movement*>(glfwGetWindowUserPointer(window));
-
     if (!windowFocused || !movement) {
         return;
     }
@@ -199,19 +167,15 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     double dy = ypos - 800 / 2;
 
     if (dx > 0) {
-        std::cout << "Mouse moved right" << std::endl;
         movement->lookRight(dx);
     } else if (dx < 0) {
-        std::cout << "Mouse moved left" << std::endl;
         movement->lookLeft(-dx);
     }
 
     if (dy > 0) {
-        std::cout << "Mouse moved down" << std::endl;
-        movement->lookUp(dy); // Move the camera up
+        movement->lookUp(dy);
     } else if (dy < 0) {
-        std::cout << "Mouse moved up" << std::endl;
-        movement->lookDown(-dy); // Move the camera down
+        movement->lookDown(-dy);
     }
 
     glfwSetCursorPos(window, 1400 / 2, 800 / 2);
@@ -231,7 +195,7 @@ int main() {
 
     Camera camera;
     Player player(camera);
-    Movement movement(player);
+    Movement movement(player, 3.0f);
     World world;
 
     glfwSetWindowUserPointer(window, &movement);
@@ -251,30 +215,32 @@ int main() {
 
     float lastTime = glfwGetTime();
 
-    // Main render loop
     while (!glfwWindowShouldClose(window)) {
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         glUseProgram(shaderProgram);
-        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0); 
+        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         renderer.render();
 
-        // Update movement with delta time
+        if (keyStates[GLFW_KEY_W]) movement.moveForward();
+        if (keyStates[GLFW_KEY_A]) movement.moveLeft();
+        if (keyStates[GLFW_KEY_S]) movement.moveBackward();
+        if (keyStates[GLFW_KEY_D]) movement.moveRight();
+        if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
+        if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
+
         movement.updateVectors(deltaTime);
 
-        // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // Cleanup
     glDeleteProgram(shaderProgram);
     glfwDestroyWindow(window);
     glfwTerminate();

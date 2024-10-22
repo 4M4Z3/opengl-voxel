@@ -1,13 +1,12 @@
 #include "Movement.h"
 #include <cmath> 
 
-Movement::Movement(Player& player) : player(player) {
+Movement::Movement(Player& player, float speed)
+    : player(player), speed(speed), verticalSpeed(speed / 3.0f) {
 }
 
 void Movement::moveForward() {
     std::cout << "Move forward" << std::endl;
-    float speed = 3.0f; 
-
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
     float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
 
@@ -17,8 +16,6 @@ void Movement::moveForward() {
 
 void Movement::moveBackward() {
     std::cout << "Move backward" << std::endl;
-    float speed = 3.0f;
-
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
     float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
 
@@ -28,7 +25,6 @@ void Movement::moveBackward() {
 
 void Movement::moveRight() {
     std::cout << "Move right" << std::endl;
-    float speed = 3.0f; 
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
 
     player.vel.z += speed * sin(yawRadians);
@@ -37,8 +33,6 @@ void Movement::moveRight() {
 
 void Movement::moveLeft() {
     std::cout << "Move left" << std::endl;
-    float speed = 3.0f; 
-
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
 
     player.vel.z -= speed * sin(yawRadians);
@@ -47,16 +41,13 @@ void Movement::moveLeft() {
 
 void Movement::moveUp() {
     std::cout << "Move up" << std::endl;
-    float speed = 3.0f; 
-    player.camera.pos.y += speed; 
+    player.camera.pos.y += verticalSpeed; 
 }
 
 void Movement::moveDown() {
     std::cout << "Move down" << std::endl;
-    float speed = 3.0f; 
-    player.camera.pos.y -= speed;
+    player.camera.pos.y -= verticalSpeed;
 }
-
 
 void Movement::lookRight(double dx) {
     player.camera.rot.y -= dx;
@@ -67,7 +58,7 @@ void Movement::lookLeft(double dx) {
 }
 
 void Movement::lookDown(double dy) {
-    player.camera.rot.x += dy; // Increase rotation to look down
+    player.camera.rot.x += dy;
 
     if (player.camera.rot.x > 89.0) {
         player.camera.rot.x = 89.0;
@@ -75,7 +66,7 @@ void Movement::lookDown(double dy) {
 }
 
 void Movement::lookUp(double dy) {
-    player.camera.rot.x -= dy; // Decrease rotation to look up
+    player.camera.rot.x -= dy;
 
     if (player.camera.rot.x < -89.0) {
         player.camera.rot.x = -89.0;
