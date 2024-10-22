@@ -1,10 +1,6 @@
 // Camera.cpp
-#include <vector>
-#include <cmath>
-#include <iostream>
+
 #include "Camera.h"
-#include "World.h"
-#include "Vertex.h"
 
 Camera::Camera() {
     pos = {30, 35, 30};

@@ -1,10 +1,6 @@
 // Chunk.cpp
 #include "Chunk.h"
-#include "Block.h"
-#include "Blocknames.h"
-#include "Triangle.h"
-#include "World.h"
-#include <iostream>
+
 
 Chunk::Chunk() {
     // seed = 0;

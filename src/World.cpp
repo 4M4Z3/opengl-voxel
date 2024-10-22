@@ -1,13 +1,9 @@
 #include "World.h"
-#include "Block.h"
-#include "Vertex.h"
-#include "Blocknames.h"
-#include <random>
-#include <vector>
+
 
 World::World(int seed) {
     this->seed = seed;
-    initializeTextureMap(); // Initialize the texture map
+    initializeTextureMap(); 
 
     // Generate chunks
     for (int x = -4; x < 4; ++x) {
@@ -31,7 +27,7 @@ World::World() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, std::numeric_limits<int>::max());
     seed = dis(gen);
-    initializeTextureMap(); // Initialize the texture map
+    initializeTextureMap(); 
 
     // Generate chunks
     for (int x = -4; x < 4; ++x) {
@@ -50,9 +46,7 @@ World::World() {
     }
 }
 
-// Define the initializeTextureMap function
 void World::initializeTextureMap() {
-    // Set texture indices for different block types and faces
     textureMap.setTexture(STONE, FRONT, 1);  // Texture 0 for the front face of stone
     textureMap.setTexture(STONE, BACK, 1);   // Texture 0 for the back face of stone
     textureMap.setTexture(STONE, LEFT, 1);   // Texture 0 for the left face of stone

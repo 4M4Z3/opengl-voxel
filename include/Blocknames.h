@@ -9,7 +9,7 @@ enum BlockType {
     GRASS,
     WATER,
     WOOD,
-    LEAVES
+    LEAVES,
 };
 
 #endif // BLOCKNAMES_H

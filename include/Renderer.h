@@ -5,10 +5,15 @@
 #include "Chunk.h"
 #include "World.h"
 #include "Vertex.h"
+#include "Triangle.h"
+#include "Vertex.h"
+#include <iostream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 class Renderer {
-    Camera camera;
-    World world;
+    Camera &camera;
+    World &world;
     std::vector<Vertex> vertices;
     unsigned int VAO, VBO; // Add VAO and VBO as member variables
 

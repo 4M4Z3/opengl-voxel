@@ -1,26 +1,13 @@
 // Renderer.cpp
 #include "Renderer.h"
-#include "World.h"
-#include "Camera.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "Triangle.h"
-#include <iostream>
-#include "Vertex.h"
 
-Renderer::Renderer() {
-    // Error if you get here!
-}
 
-Renderer::Renderer(Camera& camera, World& world) {
-    this->camera = camera;
-    this->world = world;
-
+Renderer::Renderer(Camera& camera, World& world)
+    : camera(camera), world(world) { // Initialize the camera as a reference
     // Initialize VAO and VBO
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 }
-
 void Renderer::drawTriangles(const std::vector<Vertex>& vertices) {
     glBindVertexArray(VAO);
 
@@ -44,17 +31,15 @@ void Renderer::drawTriangles(const std::vector<Vertex>& vertices) {
 
 
 void Renderer::render() {
-    static double lastTime = glfwGetTime();
+    // static double lastTime = glfwGetTime();
 
-    double currentTime = glfwGetTime();
-    double deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
+    // double currentTime = glfwGetTime();
+    // double deltaTime = currentTime - lastTime;
+    // lastTime = currentTime;
 
-    double fps = 1.0 / deltaTime;
-    std::cout << "FPS: " << fps << std::endl;
+    // double fps = 1.0 / deltaTime;
+    // std::cout << "FPS: " << fps << std::endl;
 
-    // camera.pos.z += 0.1;
-    // camera.pos.x += 0.1;
     glClearColor(0.5f, 0.7f, 1.0f, 1.0f); 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

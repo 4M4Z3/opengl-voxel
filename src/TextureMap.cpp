@@ -10,8 +10,8 @@ TextureCoords TextureMap::getTextureCoords(int blockType, FaceType face) {
 }
 
 TextureCoords TextureMap::calculateCoords(int textureIndex) {
-    int atlasSize = 256; // The size of the texture atlas (256x256)
-    int tileSize = 16;   // The size of each texture in the atlas (16x16)
+    int atlasSize = 256; 
+    int tileSize = 16; 
 
     int columns = atlasSize / tileSize; 
     

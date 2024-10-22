@@ -5,8 +5,9 @@
 #include <iostream>
 #include <sstream>
 #include "Vertex.h"
-#include "Camera.h"
+#include "Player.h"
 #include "World.h"
+#include "Movement.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -90,36 +91,34 @@ unsigned int compileShader(unsigned int type, const char* source) {
 
 unsigned int createShaderProgram() {
     const char* vertexShaderSource = R"(
-#version 330 core
-layout(location = 0) in vec3 aPos;   // Position
-layout(location = 1) in vec3 aColor; // Color
-layout(location = 2) in vec2 aTexCoord; // Texture coordinates
+        #version 330 core
+        layout(location = 0) in vec3 aPos;   // Position
+        layout(location = 1) in vec3 aColor; // Color
+        layout(location = 2) in vec2 aTexCoord; // Texture coordinates
 
-out vec3 ourColor;
-out vec2 TexCoord;
+        out vec3 ourColor;
+        out vec2 TexCoord;
 
-void main() {
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
-    TexCoord = aTexCoord;
-}
-
+        void main() {
+            gl_Position = vec4(aPos, 1.0);
+            ourColor = aColor;
+            TexCoord = aTexCoord;
+        }
     )";
 
     const char* fragmentShaderSource = R"(
-#version 330 core
-in vec3 ourColor;
-in vec2 TexCoord;
+        #version 330 core
+        in vec3 ourColor;
+        in vec2 TexCoord;
 
-out vec4 FragColor;
+        out vec4 FragColor;
 
-uniform sampler2D ourTexture;
+        uniform sampler2D ourTexture;
 
-void main() {
-    vec4 textureColor = texture(ourTexture, TexCoord);
-    FragColor = textureColor * vec4(ourColor, 1.0);
-}
-
+        void main() {
+            vec4 textureColor = texture(ourTexture, TexCoord);
+            FragColor = textureColor * vec4(ourColor, 1.0);
+        }
     )";
 
     unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
@@ -145,6 +144,79 @@ void main() {
     return shaderProgram;
 }
 
+double lastX = 0.0;
+double lastY = 0.0;
+bool firstMouse = true;
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    Movement* movement = static_cast<Movement*>(glfwGetWindowUserPointer(window));
+
+    if (movement && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
+        switch (key) {
+            case GLFW_KEY_W:
+                std::cout << "W key pressed" << std::endl;
+                movement->moveForward();
+                break;
+            case GLFW_KEY_A:
+                std::cout << "A key pressed" << std::endl;
+                movement->moveLeft();
+                break;
+            case GLFW_KEY_S:
+                std::cout << "S key pressed" << std::endl;
+                movement->moveBackward();
+                break;
+            case GLFW_KEY_D:
+                std::cout << "D key pressed" << std::endl;
+                movement->moveRight();
+                break;
+            case GLFW_KEY_SPACE:
+                std::cout << "Space key pressed" << std::endl;
+                movement->moveUp();
+                break;
+            case GLFW_KEY_LEFT_SHIFT:
+            case GLFW_KEY_RIGHT_SHIFT:
+                std::cout << "Shift key pressed" << std::endl;
+                movement->moveDown();
+                break;
+        }
+    }
+}
+
+bool windowFocused = true;
+
+void windowFocusCallback(GLFWwindow* window, int focused) {
+    windowFocused = focused;
+}
+
+void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    Movement* movement = static_cast<Movement*>(glfwGetWindowUserPointer(window));
+
+    if (!windowFocused || !movement) {
+        return;
+    }
+
+    double dx = xpos - 1400 / 2;
+    double dy = ypos - 800 / 2;
+
+    if (dx > 0) {
+        std::cout << "Mouse moved right" << std::endl;
+        movement->lookRight(dx);
+    } else if (dx < 0) {
+        std::cout << "Mouse moved left" << std::endl;
+        movement->lookLeft(-dx);
+    }
+
+    if (dy > 0) {
+        std::cout << "Mouse moved down" << std::endl;
+        movement->lookUp(dy); // Move the camera up
+    } else if (dy < 0) {
+        std::cout << "Mouse moved up" << std::endl;
+        movement->lookDown(-dy); // Move the camera down
+    }
+
+    glfwSetCursorPos(window, 1400 / 2, 800 / 2);
+}
+
 int main() {
     if (!initOpenGL()) {
         return -1;
@@ -155,39 +227,57 @@ int main() {
         return -1;
     }
 
-    glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     Camera camera;
+    Player player(camera);
+    Movement movement(player);
     World world;
+
+    glfwSetWindowUserPointer(window, &movement);
+
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetWindowFocusCallback(window, windowFocusCallback);
+
+    glEnable(GL_DEPTH_TEST);
 
     Renderer renderer(camera, world);
 
     unsigned int shaderProgram = createShaderProgram();
-    unsigned int textureID = loadTexture("assets/atlas.png"); // Load the texture atlas
+    unsigned int textureID = loadTexture("assets/atlas.png");
+
+    glfwSetCursorPos(window, 1400 / 2, 800 / 2);
+
+    float lastTime = glfwGetTime();
 
     // Main render loop
     while (!glfwWindowShouldClose(window)) {
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-
         glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0); 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         renderer.render();
 
+        // Update movement with delta time
+        movement.updateVectors(deltaTime);
+
+        // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // Cleanup
     glDeleteProgram(shaderProgram);
-
     glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;
 }
-
-

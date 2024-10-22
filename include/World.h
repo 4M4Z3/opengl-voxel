@@ -3,10 +3,16 @@
 
 #include <unordered_map>
 #include <tuple>
-#include <vector>
 #include <map>
+#include <random>
+#include <vector>
 #include "Chunk.h"
 #include "TextureMap.h"
+#include "Block.h"
+#include "Vertex.h"
+#include "Blocknames.h"
+
+class Chunk;
 
 class World {
     int seed;
