@@ -99,11 +99,15 @@ unsigned int createShaderProgram() {
         out vec3 ourColor;
         out vec2 TexCoord;
 
+        uniform mat4 view;
+        uniform mat4 projection;
+
         void main() {
-            gl_Position = vec4(aPos, 1.0);
+            gl_Position = projection * view * vec4(aPos, 1.0);
             ourColor = aColor;
             TexCoord = aTexCoord;
         }
+
     )";
 
     const char* fragmentShaderSource = R"(
@@ -207,7 +211,7 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
 
-    Renderer renderer(camera, world);
+    Renderer renderer(camera, &world);
 
     unsigned int shaderProgram = createShaderProgram();
     unsigned int textureID = loadTexture("assets/atlas.png");
@@ -227,7 +231,7 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        renderer.render();
+        renderer.render(shaderProgram, window);
 
         if (keyStates[GLFW_KEY_W]) movement.moveForward();
         if (keyStates[GLFW_KEY_A]) movement.moveLeft();
@@ -236,7 +240,7 @@ int main() {
         if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
         if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
 
-        std::cout << "(" << player.camera.pos.x << ", " << player.camera.pos.y << ", " << player.camera.pos.z << ")" << std::endl;
+        std::cout << "(" << player.camera.getX() << ", " << player.camera.getY() << ", " << player.camera.getZ() << ")" << std::endl;
 
         movement.updateVectors(deltaTime);
 

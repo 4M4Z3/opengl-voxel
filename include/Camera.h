@@ -1,39 +1,43 @@
-// Camera.h
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <vector>
-#include <cmath>
-#include <iostream>
-#include "Triangle.h"
-#include "Vec3.h"
-#include "World.h"
-#include "Vertex.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class Camera {
 public:
-    Vec3 pos; 
-    Vec3 rot; 
-    float fov; 
-
-    // Direction vectors
-    Vec3 forward;
-    Vec3 right;
-    Vec3 up;
-
-    std::vector<Triangle> view_triangles; 
-
     Camera();
-    Camera(Vec3 pos, Vec3 rot, float fov);
+    Camera(const glm::vec3& position, const glm::vec3& rotation, float fov);
 
-    // Methods
-    void updateCameraVectors();
-    std::vector<Triangle>& projectionMatrix(World& world);
-    void printViewTriangles(const std::vector<Triangle>& view_triangles); 
-    void clearCamera(); 
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getProjectionMatrix(float aspectRatio) const;
+
+    void setPosition(const glm::vec3& position);
+    void setRotation(const glm::vec3& rotation);
+    void setFOV(float fov);
+
+    glm::vec3 getPosition() const;
+    glm::vec3 getRotation() const;
+    float getFOV() const;
+
+    // Individual position components
+    void setX(float x);
+    void setY(float y);
+    void setZ(float z);
+    float getX() const;
+    float getY() const;
+    float getZ() const;
+
+    // Individual rotation components
+    void setRotX(float rotX);
+    void setRotY(float rotY);
+    float getRotX() const;
+    float getRotY() const;
 
 private:
-    float toRadians(float degrees); 
+    glm::vec3 position;
+    glm::vec3 rotation; // Pitch (X), Yaw (Y), Roll (Z)
+    float fov;
 };
 
-#endif
+#endif // CAMERA_H

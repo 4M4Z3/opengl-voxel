@@ -10,6 +10,8 @@
 #include "TextureMap.h"
 #include "Block.h"
 #include "Vertex.h"
+#include "Triangle.h"
+#include "Camera.h"
 
 class Chunk;
 
@@ -19,7 +21,7 @@ class World {
 public:
     World(int seed);
     World();
-
+    Chunk* getChunk(int chunkX, int chunkZ);
     struct pair_hash {
         std::size_t operator()(const std::pair<int, int>& p) const {
             return std::hash<int>()(p.first) ^ (std::hash<int>()(p.second) << 1);
@@ -28,6 +30,7 @@ public:
 
     std::unordered_map<std::pair<int, int>, Chunk, pair_hash> chunks;
     Block getBlock(int x, int y, int z);
+    std::vector<Triangle> getVisibleTriangles(const Camera& camera) const;
 
     TextureMap textureMap; 
 
@@ -36,3 +39,4 @@ public:
 };
 
 #endif // WORLD_H
+

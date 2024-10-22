@@ -1,83 +1,89 @@
 #include "Movement.h"
-#include <cmath> 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 Movement::Movement(Player& player, float speed)
     : player(player), speed(speed), verticalSpeed(speed / 3.0f) {
 }
 
 void Movement::moveForward() {
-    float yawRadians = player.camera.rot.y * M_PI / 180.0f;
-    float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
-
-    player.vel.z += speed * cos(yawRadians) * cos(pitchRadians);
-    player.vel.x += -speed * sin(yawRadians) * cos(pitchRadians);
+    glm::vec3 forward = glm::normalize(glm::vec3(
+        sin(glm::radians(player.camera.getRotY())),
+        0.0f,
+        -cos(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed * forward;
 }
 
 void Movement::moveBackward() {
-    float yawRadians = player.camera.rot.y * M_PI / 180.0f;
-    float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
-
-    player.vel.z -= speed * cos(yawRadians) * cos(pitchRadians);
-    player.vel.x -= -speed * sin(yawRadians) * cos(pitchRadians);
+    glm::vec3 backward = glm::normalize(glm::vec3(
+        -sin(glm::radians(player.camera.getRotY())),
+        0.0f,
+        cos(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed * backward;
 }
 
-void Movement::moveRight() {
-    float yawRadians = player.camera.rot.y * M_PI / 180.0f;
 
-    player.vel.z += speed * sin(yawRadians);
-    player.vel.x += speed * cos(yawRadians);
+void Movement::moveRight() {
+    glm::vec3 right = glm::normalize(glm::vec3(
+        cos(glm::radians(player.camera.getRotY())),
+        0.0f,
+        sin(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed * right;
 }
 
 void Movement::moveLeft() {
-    float yawRadians = player.camera.rot.y * M_PI / 180.0f;
-
-    player.vel.z -= speed * sin(yawRadians);
-    player.vel.x -= speed * cos(yawRadians);
+    glm::vec3 left = glm::normalize(glm::vec3(
+        -cos(glm::radians(player.camera.getRotY())),
+        0.0f,
+        -sin(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed * left;
 }
 
 void Movement::moveUp() {
-    player.camera.pos.y += verticalSpeed; 
+    player.vel.y += verticalSpeed;
 }
 
 void Movement::moveDown() {
-    player.camera.pos.y -= verticalSpeed;
+    player.vel.y -= verticalSpeed;
 }
 
 void Movement::lookRight(double dx) {
-    player.camera.rot.y -= dx;
+    player.camera.setRotY(player.camera.getRotY() + dx);
 }
 
 void Movement::lookLeft(double dx) {
-    player.camera.rot.y += dx;
+    player.camera.setRotY(player.camera.getRotY() - dx);
 }
 
 void Movement::lookDown(double dy) {
-    player.camera.rot.x += dy;
-
-    if (player.camera.rot.x > 89.0) {
-        player.camera.rot.x = 89.0;
+    float newRotX = player.camera.getRotX() - dy;
+    if (newRotX < -89.0f) {
+        newRotX = -89.0f;
     }
+    player.camera.setRotX(newRotX);
 }
 
 void Movement::lookUp(double dy) {
-    player.camera.rot.x -= dy;
-
-    if (player.camera.rot.x < -89.0) {
-        player.camera.rot.x = -89.0;
+    float newRotX = player.camera.getRotX() + dy;
+    if (newRotX > 89.0f) {
+        newRotX = 89.0f;
     }
+    player.camera.setRotX(newRotX);
 }
 
+
 void Movement::updateVectors(float deltaTime) {
-    player.camera.pos.x += player.vel.x * deltaTime;
-    player.camera.pos.y += player.vel.y * deltaTime;
-    player.camera.pos.z += player.vel.z * deltaTime;
+    glm::vec3 newPosition = player.camera.getPosition() + player.vel * deltaTime;
+    player.camera.setPosition(newPosition);
 
     float friction = 2.0f;
-    player.vel.x -= player.vel.x * friction * deltaTime;
-    player.vel.y -= player.vel.y * friction * deltaTime;
-    player.vel.z -= player.vel.z * friction * deltaTime;
+    player.vel -= player.vel * friction * deltaTime;
 
-    if (std::abs(player.vel.x) < 0.01f) player.vel.x = 0;
-    if (std::abs(player.vel.y) < 0.01f) player.vel.y = 0;
-    if (std::abs(player.vel.z) < 0.01f) player.vel.z = 0;
+    if (glm::length(player.vel) < 0.01f) {
+        player.vel = glm::vec3(0.0f);
+    }
 }

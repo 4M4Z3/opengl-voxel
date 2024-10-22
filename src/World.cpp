@@ -1,6 +1,5 @@
 #include "World.h"
 
-
 World::World(int seed) {
     this->seed = seed;
     initializeTextureMap(); 
@@ -30,8 +29,8 @@ World::World() {
     initializeTextureMap(); 
 
     // Generate chunks
-    for (int x = -2; x < 2; ++x) {
-        for (int z = -2; z < 2; ++z) {
+    for (int x = 0; x < 10; ++x) {
+        for (int z = 0; z < 10; ++z) {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 
@@ -79,4 +78,32 @@ Block World::getBlock(int x, int y, int z) {
     }
 
     return it->second.chunk[localX][y][localZ];
+}
+
+std::vector<Triangle> World::getVisibleTriangles(const Camera& camera) const {
+    std::vector<Triangle> visibleTriangles; 
+    visibleTriangles.clear(); 
+
+    glm::vec3 cameraPosition = camera.getPosition();
+    float viewDistance = 100.0f;
+
+    for (const auto& [key, chunk] : chunks) {
+        glm::vec3 chunkCenter = glm::vec3(key.first + 8, 0, key.second + 8);
+
+        if (glm::distance(cameraPosition, chunkCenter) < viewDistance) {
+            for (const Triangle& tri : chunk.triangles) {
+                visibleTriangles.push_back(tri);
+            }
+        }
+    }
+
+    return visibleTriangles;
+}
+
+Chunk* World::getChunk(int chunkX, int chunkZ) {
+    auto it = chunks.find({chunkX, chunkZ});
+    if (it != chunks.end()) {
+        return &it->second;
+    }
+    return nullptr;
 }
