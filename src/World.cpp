@@ -11,7 +11,7 @@ World::World(int seed) {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 
-            Chunk c = Chunk(chunkX, chunkZ, this);
+            Chunk c = Chunk(chunkX, chunkZ, *this);
             chunks.insert({{chunkX, chunkZ}, c});
         }
     }
@@ -35,7 +35,7 @@ World::World() {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 
-            Chunk c = Chunk(chunkX, chunkZ, this);
+            Chunk c = Chunk(chunkX, chunkZ, *this);
             chunks.insert({{chunkX, chunkZ}, c});
         }
     }
@@ -43,6 +43,10 @@ World::World() {
     for (auto& [key, chunk] : chunks) {
         chunk.initializeMesh();
     }
+}
+
+int World::getSeed(){
+    return seed;
 }
 
 void World::initializeTextureMap() {

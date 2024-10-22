@@ -29,10 +29,10 @@ public:
     std::unordered_map<std::pair<int, int>, Chunk, pair_hash> chunks;
     Block getBlock(int x, int y, int z);
 
-    TextureMap textureMap; // Add the TextureMap as a member
+    TextureMap textureMap; 
 
-    // Declaration for initializeTextureMap
     void initializeTextureMap(); 
+    int getSeed();
 };
 
 #endif // WORLD_H
