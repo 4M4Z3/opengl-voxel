@@ -1,14 +1,17 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-#include "Blocknames.h"
+#include "BlockTypes.h"
 
 class Block {
 public:
-    int type;
+    BlockType type;
 
     Block();
-    Block(int type);
+    Block(BlockType type);
+    
+    MeshType getMeshType() const;
+    int getTextureIndex(FaceType face) const;
 };
 
 #endif // BLOCK_H

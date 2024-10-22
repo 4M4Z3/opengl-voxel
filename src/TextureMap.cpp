@@ -10,18 +10,19 @@ TextureCoords TextureMap::getTextureCoords(int blockType, FaceType face) {
 }
 
 TextureCoords TextureMap::calculateCoords(int textureIndex) {
-    int atlasSize = 256; 
-    int tileSize = 16; 
+    int atlasSize = 256; // Size of the entire atlas in pixels
+    int tileSize = 16;   // Size of a single texture tile in pixels
 
-    int columns = atlasSize / tileSize; 
-    
+    int columns = atlasSize / tileSize;
+
     int row = textureIndex / columns;
     int col = textureIndex % columns;
 
-    float minU = (col * tileSize) / (float)atlasSize;
-    float maxU = ((col + 1) * tileSize) / (float)atlasSize;
-    float minV = (row * tileSize) / (float)atlasSize;
-    float maxV = ((row + 1) * tileSize) / (float)atlasSize;
+    float offset = 0.5f / atlasSize; // Half-pixel offset to prevent bleeding
+    float minU = (col * tileSize + offset) / (float)atlasSize;
+    float maxU = ((col + 1) * tileSize - offset) / (float)atlasSize;
+    float minV = (row * tileSize + offset) / (float)atlasSize;
+    float maxV = ((row + 1) * tileSize - offset) / (float)atlasSize;
 
     return { minU, maxU, minV, maxV };
 }

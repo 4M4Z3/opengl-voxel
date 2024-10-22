@@ -10,7 +10,6 @@
 #include "TextureMap.h"
 #include "Block.h"
 #include "Vertex.h"
-#include "Blocknames.h"
 
 class Chunk;
 

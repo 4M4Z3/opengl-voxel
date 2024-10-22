@@ -25,8 +25,8 @@ unsigned int loadTexture(const char* filepath) {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         stbi_image_free(data);
     } else {
@@ -163,7 +163,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
         return;
     }
 
-    double dx = xpos - 1400 / 2;
+    double dx = xpos - 1100 / 2;
     double dy = ypos - 800 / 2;
 
     if (dx > 0) {
@@ -178,7 +178,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
         movement->lookDown(-dy);
     }
 
-    glfwSetCursorPos(window, 1400 / 2, 800 / 2);
+    glfwSetCursorPos(window, 1100 / 2, 800 / 2);
 }
 
 int main() {
@@ -186,7 +186,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = createWindow(1400, 800, "Voxel Game");
+    GLFWwindow* window = createWindow(1100, 800, "Voxel Game");
     if (!window) {
         return -1;
     }
@@ -234,6 +234,8 @@ int main() {
         if (keyStates[GLFW_KEY_D]) movement.moveRight();
         if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
         if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
+
+        std::cout << "(" << player.camera.pos.x << ", " << player.camera.pos.y << ", " << player.camera.pos.z << ")" << std::endl;
 
         movement.updateVectors(deltaTime);
 

@@ -40,27 +40,20 @@ World::World() {
         }
     }
 
-    // Initialize mesh for each chunk
     for (auto& [key, chunk] : chunks) {
         chunk.initializeMesh();
     }
 }
 
 void World::initializeTextureMap() {
-    textureMap.setTexture(STONE, FRONT, 1);  // Texture 0 for the front face of stone
-    textureMap.setTexture(STONE, BACK, 1);   // Texture 0 for the back face of stone
-    textureMap.setTexture(STONE, LEFT, 1);   // Texture 0 for the left face of stone
-    textureMap.setTexture(STONE, RIGHT, 1);  // Texture 0 for the right face of stone
-    textureMap.setTexture(STONE, TOP, 1);    // Texture 1 for the top face of stone
-    textureMap.setTexture(STONE, BOTTOM, 1); // Texture 2 for the bottom face of stone
-
-    textureMap.setTexture(DIRT, FRONT, 2);   // Texture 3 for the front face of dirt
-    textureMap.setTexture(DIRT, BACK, 2);    // Texture 3 for the back face of dirt
-    textureMap.setTexture(DIRT, LEFT, 2);    // Texture 3 for the left face of dirt
-    textureMap.setTexture(DIRT, RIGHT, 2);   // Texture 3 for the right face of dirt
-    textureMap.setTexture(DIRT, TOP, 2);     // Texture 4 for the top face of dirt
-    textureMap.setTexture(DIRT, BOTTOM, 2);  // Texture 5 for the bottom face of dirt
-
+    for (int blockType = 0; blockType < sizeof(blockTypeInfos) / sizeof(BlockTypeInfo); ++blockType) {
+        for (int face = 0; face < 6; ++face) {
+            int textureIndex = blockTypeInfos[blockType].textures[face];
+            if (textureIndex != -1) {
+                textureMap.setTexture(blockType, static_cast<FaceType>(face), textureIndex);
+            }
+        }
+    }
 }
 
 Block World::getBlock(int x, int y, int z) {

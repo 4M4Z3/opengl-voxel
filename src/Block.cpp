@@ -1,9 +1,13 @@
 #include "Block.h"
 
-Block::Block(){
-    type = 0;
+Block::Block() : type(AIR) {}
+
+Block::Block(BlockType type) : type(type) {}
+
+MeshType Block::getMeshType() const {
+    return blockTypeInfos[type].meshType;
 }
 
-Block::Block(int type){
-    this->type = type;
+int Block::getTextureIndex(FaceType face) const {
+    return blockTypeInfos[type].textures[face];
 }

@@ -15,7 +15,7 @@ class Renderer {
     Camera &camera;
     World &world;
     std::vector<Vertex> vertices;
-    unsigned int VAO, VBO; // Add VAO and VBO as member variables
+    unsigned int VAO, VBO;
 
 public:
     Renderer();

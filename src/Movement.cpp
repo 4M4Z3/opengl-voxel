@@ -6,7 +6,6 @@ Movement::Movement(Player& player, float speed)
 }
 
 void Movement::moveForward() {
-    std::cout << "Move forward" << std::endl;
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
     float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
 
@@ -15,7 +14,6 @@ void Movement::moveForward() {
 }
 
 void Movement::moveBackward() {
-    std::cout << "Move backward" << std::endl;
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
     float pitchRadians = player.camera.rot.x * M_PI / 180.0f;
 
@@ -24,7 +22,6 @@ void Movement::moveBackward() {
 }
 
 void Movement::moveRight() {
-    std::cout << "Move right" << std::endl;
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
 
     player.vel.z += speed * sin(yawRadians);
@@ -32,7 +29,6 @@ void Movement::moveRight() {
 }
 
 void Movement::moveLeft() {
-    std::cout << "Move left" << std::endl;
     float yawRadians = player.camera.rot.y * M_PI / 180.0f;
 
     player.vel.z -= speed * sin(yawRadians);
@@ -40,12 +36,10 @@ void Movement::moveLeft() {
 }
 
 void Movement::moveUp() {
-    std::cout << "Move up" << std::endl;
     player.camera.pos.y += verticalSpeed; 
 }
 
 void Movement::moveDown() {
-    std::cout << "Move down" << std::endl;
     player.camera.pos.y -= verticalSpeed;
 }
 

@@ -5,6 +5,7 @@
 #include "Vertex.h"
 #include "Triangle.h"
 #include "World.h"
+#include "Block.h"
 #include <iostream>
 
 class World;
