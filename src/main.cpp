@@ -68,6 +68,7 @@ GLFWwindow* createWindow(int width, int height, const char* title) {
     }
 
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
 
     return window;
 }

@@ -3,8 +3,8 @@
 #include "Camera.h"
 
 Camera::Camera() {
-    pos = {30, 70, 30};
-    rot = {-50, -135, 0};
+    pos = {00, 70, 00};
+    rot = {0, 0, 0};
     fov = 75;
 }
 
