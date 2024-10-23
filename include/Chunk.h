@@ -22,6 +22,8 @@ public:
     Block getBlock(int x, int y, int z) const;
     bool isBlockSolid(int x, int y, int z);
     float calculateAmbientOcclusion(int x, int y, int z, FaceType face);
+    bool areNeighborsLoaded() const;
+    BlockType getBlockTypeAt(int x, int y, int z);
 
     // Chunk data
     Block chunk[16][256][16];
@@ -35,7 +37,6 @@ private:
     void addFaceTriangles(glm::vec3* vertices, FaceType face, int neighborX, int neighborY, int neighborZ, Block block);
     Block generateBlock(int x, int y, int z, PerlinNoise& noise);
     bool shouldRenderFace(BlockType currentBlockType, int x, int y, int z);
-    BlockType getBlockTypeAt(int x, int y, int z);
 };
 
 #endif // CHUNK_H

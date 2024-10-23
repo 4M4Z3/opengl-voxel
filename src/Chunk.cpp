@@ -40,7 +40,7 @@ void Chunk::initializeMesh() {
                     if (shouldRenderFace(block.type, x, y + 1, z)) {
                         addFaceTriangles(vertices, FaceType::TOP, x, y + 1, z, block);
                     }
-                    if (shouldRenderFace(block.type, x, y - 1, z)) {
+                    if (y > 0 && shouldRenderFace(block.type, x, y - 1, z)) {
                         addFaceTriangles(vertices, FaceType::BOTTOM, x, y - 1, z, block);
                     }
                     if (shouldRenderFace(block.type, x, y, z + 1)) {
@@ -74,6 +74,8 @@ BlockType Chunk::getBlockTypeAt(int x, int y, int z) {
         return AIR;
     }
 
+    // std::cout << x << ", " << y << ", " << z << std::endl;
+
     int localX = x;
     int localZ = z;
 
@@ -97,6 +99,7 @@ BlockType Chunk::getBlockTypeAt(int x, int y, int z) {
 
     return chunk[x][y][z].type;
 }
+
 
 void Chunk::addFaceTriangles(glm::vec3* vertices, FaceType face, int neighborX, int neighborY, int neighborZ, Block block) {
     int worldX = neighborX + xOffset;
@@ -257,21 +260,27 @@ void Chunk::generateChunk() {
 }
 
 Block Chunk::generateBlock(int x, int y, int z, PerlinNoise& noise) {
-    double frequency = 0.01;
-    double surfaceY = 50 + noise.noise2D(x * frequency * 1.4, z * frequency) * 60.0;
-    int seaLevel = 40;
+    return y < 50 + 5 * sin(x * 0.05) + 10 * sin(z*0.05) ? GRASS : AIR;
+    
 
-    if (y < surfaceY - 5) {
-        return STONE;
-    } else if (y < surfaceY) {
-        return DIRT;
-    } 
-    else if (y < seaLevel) {
-        return WATER;
-    } 
-    else if (y < surfaceY + 1) {
-        return GRASS;
-    }
 
-    return AIR;
+
+
+    // double frequency = 0.01;
+    // double surfaceY = 50 + noise.noise2D(x * frequency * 1.4, z * frequency) * 60.0;
+    // int seaLevel = 40;
+
+    // if (y < surfaceY - 5) {
+    //     return STONE;
+    // } else if (y < surfaceY) {
+    //     return DIRT;
+    // } 
+    // else if (y < seaLevel) {
+    //     return WATER;
+    // } 
+    // else if (y < surfaceY + 1) {
+    //     return GRASS;
+    // }
+
+    // return AIR;
 }

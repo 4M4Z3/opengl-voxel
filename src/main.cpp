@@ -277,13 +277,20 @@ int main() {
     float lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
+        // std::cout << "("    
+        //   << static_cast<int>(player.camera.getX()) % 16 << ", "
+        //   << static_cast<int>(player.camera.getY()) % 16 << ", "
+        //   << static_cast<int>(player.camera.getZ()) % 16 << ")"
+        //   << std::endl;
+
         std::cout 
-        << world.getBlock(player.camera.getX(),player.camera.getY(),player.camera.getZ()).type << ", "
-           << world.getBlock(player.camera.getX(),player.camera.getY()-1,player.camera.getZ()).type << ", "
+        // << world.getBlock(player.camera.getX(),player.camera.getY(),player.camera.getZ()).type << ", "
+        //    << world.getBlock(player.camera.getX(),player.camera.getY()-1,player.camera.getZ()).type << ", "
               << world.getBlock(player.camera.getX(),player.camera.getY()-2,player.camera.getZ()).type
-        
-        
          << std::endl;
+
+std::cout << world.getChunk((static_cast<int>(player.camera.getX()) / 16) * 16, (static_cast<int>(player.camera.getZ()) / 16) * 16)
+    ->getBlockTypeAt(static_cast<int>(player.camera.getX()) % 16, static_cast<int>(player.camera.getY()-2), static_cast<int>(player.camera.getZ()) % 16) << std::endl;
 
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastTime;
@@ -294,6 +301,9 @@ int main() {
         glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
+
+        // Enable wireframe
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         // Set lighting parameters before rendering
         glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, -1.0f, 0.5f));
