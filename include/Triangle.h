@@ -3,6 +3,7 @@
 #define TRIANGLE_H
 
 #include "Vertex.h"
+#include <glm/glm.hpp>
 
 class Triangle {
 public:
@@ -10,16 +11,12 @@ public:
     float depth;
 
     Triangle() = default;
-    Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, float depth)
-        : v0(v0), v1(v1), v2(v2), depth(depth) {}
+    Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, float depth);
+    Triangle(const Triangle& other);
+    Triangle(Triangle&& other) noexcept;
+    Triangle& operator=(Triangle&& other) noexcept;
 
-    // Explicitly define a copy constructor
-    Triangle(const Triangle& other)
-        : v0(other.v0), v1(other.v1), v2(other.v2), depth(other.depth) {}
-
-    // Add move constructor and move assignment operator
-    Triangle(Triangle&& other) noexcept = default;
-    Triangle& operator=(Triangle&& other) noexcept = default;
+    void calculateDepth(const glm::vec3& cameraPosition);
 };
 
 #endif // TRIANGLE_H

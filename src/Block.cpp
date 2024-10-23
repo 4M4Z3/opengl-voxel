@@ -9,5 +9,9 @@ MeshType Block::getMeshType() const {
 }
 
 int Block::getTextureIndex(FaceType face) const {
+    if (type < 0 || type >= sizeof(blockTypeInfos) / sizeof(BlockTypeInfo)) {
+        return -1; 
+    }
     return blockTypeInfos[type].textures[face];
 }
+

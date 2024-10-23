@@ -1,5 +1,7 @@
 #include "Renderer.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include "Block.h"
 
 Renderer::Renderer(Camera& camera, World* world) // Accept World as a pointer
     : camera(camera), world(world) {
@@ -30,6 +32,7 @@ void Renderer::drawTriangles(const std::vector<Vertex>& vertices) {
 }
 
 void Renderer::render(unsigned int shaderProgram, GLFWwindow* window) {
+
     glClearColor(0.5f, 0.7f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -37,26 +40,21 @@ void Renderer::render(unsigned int shaderProgram, GLFWwindow* window) {
     glfwGetFramebufferSize(window, &width, &height);
     float aspectRatio = static_cast<float>(width) / height;
 
-    // Get the view and projection matrices from the camera
     glm::mat4 viewMatrix = camera.getViewMatrix();
     glm::mat4 projectionMatrix = camera.getProjectionMatrix(aspectRatio);
 
-    // Use the shader program
     glUseProgram(shaderProgram);
 
-    // Pass the view and projection matrices to the shader as uniforms
     int viewLoc = glGetUniformLocation(shaderProgram, "view");
     int projLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-    // Get a copy of the triangles for sorting
     std::vector<Triangle> sortedTriangles = world->getVisibleTriangles(camera);
     std::sort(sortedTriangles.begin(), sortedTriangles.end(), [](const Triangle& a, const Triangle& b) {
         return a.depth > b.depth;
     });
 
-    // Convert triangles to a vertex array
     std::vector<Vertex> vertices;
     vertices.reserve(sortedTriangles.size() * 3);
     for (const Triangle& triangle : sortedTriangles) {

@@ -30,16 +30,15 @@ enum BlockType {
     LEAVES,
 };
 
-// Define block type metadata, including textures and mesh type
 const BlockTypeInfo blockTypeInfos[] = {
-    // Front, Back, Left, Right, Top, Bottom
-    { { -1, -1, -1, -1, -1, -1 }, MeshType::CUBE }, // AIR
+    { { -1, -1, -1, -1, -1, -1 }, MeshType::CUBE }, // AIR (should not render)
     { { 1, 1, 1, 1, 1, 1 }, MeshType::CUBE },       // STONE
     { { 2, 2, 2, 2, 2, 2 }, MeshType::CUBE },       // DIRT
-    { { 3, 3, 3, 3, 0, 3 }, MeshType::CUBE },       // GRASS (top and bottom textures different)
-    { { 195, 195, 195, 195, 195, 195 }, MeshType::CUBE },       // WATER
-    { { 20, 20, 20, 20, 21, 21 }, MeshType::CUBE },       // WOOD
-    { { 52, 52, 52, 52, 52, 52 }, MeshType::CUBE },       // LEAVES
+    { { 3, 3, 3, 3, 0, 3 }, MeshType::CUBE },       // GRASS
+    { { 195, 195, 195, 195, 195, 195 }, MeshType::CUBE }, // WATER
+    { { 20, 20, 20, 20, 21, 21 }, MeshType::CUBE }, // WOOD
+    { { 52, 52, 52, 52, 52, 52 }, MeshType::CUBE }, // LEAVES
 };
+
 
 #endif // BLOCKTYPES_H

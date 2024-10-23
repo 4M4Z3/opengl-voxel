@@ -9,8 +9,8 @@ public:
     Player();
     Player(Camera& camera);
 
-    glm::vec3 vel;  // Velocity of the player
-    Camera& camera; // Reference to the player's camera
+    glm::vec3 vel; 
+    Camera& camera;
 };
 
 #endif // PLAYER_H

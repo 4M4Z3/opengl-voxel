@@ -1,4 +1,5 @@
 #include "TextureMap.h"
+#include <iostream>
 
 void TextureMap::setTexture(int blockType, FaceType face, int textureIndex) {
     textureMapping[blockType][face] = textureIndex;
@@ -9,20 +10,25 @@ TextureCoords TextureMap::getTextureCoords(int blockType, FaceType face) {
     return calculateCoords(textureIndex);
 }
 
+
 TextureCoords TextureMap::calculateCoords(int textureIndex) {
-    int atlasSize = 256; 
-    int tileSize = 16;  
+    const int atlasSize = 256;
+    const int tileSize = 16; 
+    const int tilesPerRow = atlasSize / tileSize;
 
-    int columns = atlasSize / tileSize;
+    int row = textureIndex / tilesPerRow;
+    int col = textureIndex % tilesPerRow;
 
-    int row = textureIndex / columns;
-    int col = textureIndex % columns;
+    float minU = col * (1.0f / tilesPerRow);
+    float maxU = (col + 1) * (1.0f / tilesPerRow);
+    float minV = row * (1.0f / tilesPerRow);
+    float maxV = (row + 1) * (1.0f / tilesPerRow);
 
-    float offset = 0.5f / atlasSize;
-    float minU = (col * tileSize + offset) / (float)atlasSize;
-    float maxU = ((col + 1) * tileSize - offset) / (float)atlasSize;
-    float minV = (row * tileSize + offset) / (float)atlasSize;
-    float maxV = ((row + 1) * tileSize - offset) / (float)atlasSize;
+    const float offset = 0.001f;
+    minU += offset;
+    maxU -= offset;
+    minV += offset;
+    maxV -= offset;
 
     return { minU, maxU, minV, maxV };
 }

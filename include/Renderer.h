@@ -15,7 +15,7 @@ public:
 
 private:
     Camera& camera;
-    const World* world; // Make world a const pointer
+    const World* world;
     unsigned int VAO, VBO;
 
     void drawTriangles(const std::vector<Vertex>& vertices);

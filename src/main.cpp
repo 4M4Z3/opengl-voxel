@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "Vertex.h"
+#include "TextureMap.h"
 #include "Player.h"
 #include "World.h"
 #include "Movement.h"
@@ -111,18 +112,19 @@ unsigned int createShaderProgram() {
     )";
 
     const char* fragmentShaderSource = R"(
-        #version 330 core
-        in vec3 ourColor;
-        in vec2 TexCoord;
+#version 330 core
+in vec3 ourColor;
+in vec2 TexCoord;
 
-        out vec4 FragColor;
+out vec4 FragColor;
 
-        uniform sampler2D ourTexture;
+uniform sampler2D ourTexture;
 
-        void main() {
-            vec4 textureColor = texture(ourTexture, TexCoord);
-            FragColor = textureColor * vec4(ourColor, 1.0);
-        }
+void main() {
+    vec4 textureColor = texture(ourTexture, TexCoord);
+    FragColor = textureColor * vec4(ourColor, 1.0);
+}
+
     )";
 
     unsigned int vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
@@ -240,7 +242,15 @@ int main() {
         if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
         if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
 
-        std::cout << "(" << player.camera.getX() << ", " << player.camera.getY() << ", " << player.camera.getZ() << ")" << std::endl;
+        // std::cout << "(" << player.camera.getX() << ", " << player.camera.getY() << ", " << player.camera.getZ() << ")" << std::endl;
+        // std::cout << world.getBlock((int)player.camera.getX(),(int)player.camera.getY(), (int)player.camera.getZ()).type << std::endl;
+        
+        // int textureIndex = 5;
+        // TextureCoords coords = textureMap.calculateCoords(textureIndex);
+
+        // std::cout << "minU: " << coords.minU << ", maxU: " << coords.maxU << std::endl;
+        // std::cout << "minV: " << coords.minV << ", maxV: " << coords.maxV << std::endl;
+
 
         movement.updateVectors(deltaTime);
 

@@ -12,11 +12,11 @@ struct TextureCoords {
 class TextureMap {
 public:
     void setTexture(int blockType, FaceType face, int textureIndex);
-    TextureCoords getTextureCoords(int blockType, FaceType face);
 
-private:
+// private:
+    TextureCoords getTextureCoords(int blockType, FaceType face);
     std::unordered_map<int, std::unordered_map<FaceType, int>> textureMapping;
-    TextureCoords calculateCoords(int textureIndex); // Calculate texture coordinates based on index
+    TextureCoords calculateCoords(int textureIndex); 
 };
 
 #endif // TEXTURE_MAP_H
