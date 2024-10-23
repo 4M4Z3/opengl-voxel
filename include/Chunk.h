@@ -20,6 +20,8 @@ public:
     void initializeMesh(); 
     void generateChunk();
     Block getBlock(int x, int y, int z) const;
+    bool isBlockSolid(int x, int y, int z);
+    float calculateAmbientOcclusion(int x, int y, int z, FaceType face);
 
     // Chunk data
     Block chunk[16][256][16];

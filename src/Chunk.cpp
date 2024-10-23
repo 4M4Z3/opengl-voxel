@@ -31,7 +31,6 @@ void Chunk::initializeMesh() {
                         basePos + glm::vec3(0, 1, 1)
                     };
 
-                    // Check if each face should be rendered based on neighboring block type
                     if (shouldRenderFace(block.type, x + 1, y, z)) {
                         addFaceTriangles(vertices, FaceType::RIGHT, x + 1, y, z, block);
                     }
@@ -56,9 +55,12 @@ void Chunk::initializeMesh() {
     }
 }
 
-
 bool Chunk::shouldRenderFace(BlockType currentBlockType, int x, int y, int z) {
     BlockType neighborType = getBlockTypeAt(x, y, z);
+
+    if (neighborType == NULLBLOCK || y < 0){
+        return false;
+    }
 
     if (currentBlockType == WATER) {
         return neighborType == AIR;
@@ -103,90 +105,93 @@ void Chunk::addFaceTriangles(glm::vec3* vertices, FaceType face, int neighborX, 
     int textureIndex = blockTypeInfos[block.type].textures[face];
     TextureCoords texCoords = world.textureMap.getTextureCoords(block.type, face);
 
-    auto toVertex = [texCoords](const glm::vec3& pos, float u, float v, const glm::vec3& normal) {
-        return Vertex{pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, u, v};
+    // Calculate ambient occlusion for this face
+    float ambientOcclusion = calculateAmbientOcclusion(neighborX, neighborY, neighborZ, face);
+
+    // Lambda function to create a Vertex with ambient occlusion
+    auto toVertexWithAO = [texCoords, ambientOcclusion](const glm::vec3& pos, float u, float v, const glm::vec3& normal) {
+        return Vertex{pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, u, v, ambientOcclusion};
     };
 
-    // Set the normal for each face direction
+    // Set the normal for each face direction and create triangles
     glm::vec3 normal;
-    float intensity = 1.0f; // Full brightness for all faces
     switch (face) {
         case FaceType::FRONT:
             normal = glm::vec3(0.0f, 0.0f, 1.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[4], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[5], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
-                toVertex(vertices[7], texCoords.minU, texCoords.minV, normal), // Top-left
+                toVertexWithAO(vertices[4], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[5], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[7], texCoords.minU, texCoords.minV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[5], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
-                toVertex(vertices[6], texCoords.maxU, texCoords.minV, normal), // Top-right
-                toVertex(vertices[7], texCoords.minU, texCoords.minV, normal), // Top-left
+                toVertexWithAO(vertices[5], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[6], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[7], texCoords.minU, texCoords.minV, normal),
                 0.0f));
             break;
         case FaceType::BACK:
             normal = glm::vec3(0.0f, 0.0f, -1.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[1], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
-                toVertex(vertices[0], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[2], texCoords.maxU, texCoords.minV, normal), // Top-right
+                toVertexWithAO(vertices[1], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[2], texCoords.maxU, texCoords.minV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[2], texCoords.maxU, texCoords.minV, normal), // Top-right
-                toVertex(vertices[0], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[3], texCoords.minU, texCoords.minV, normal), // Top-left
+                toVertexWithAO(vertices[2], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[3], texCoords.minU, texCoords.minV, normal),
                 0.0f));
             break;
         case FaceType::LEFT:
             normal = glm::vec3(-1.0f, 0.0f, 0.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[0], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[7], texCoords.maxU, texCoords.minV, normal), // Top-right
-                toVertex(vertices[3], texCoords.minU, texCoords.minV, normal), // Top-left
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[7], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[3], texCoords.minU, texCoords.minV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[0], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[4], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
-                toVertex(vertices[7], texCoords.maxU, texCoords.minV, normal), // Top-right
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[4], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[7], texCoords.maxU, texCoords.minV, normal),
                 0.0f));
             break;
         case FaceType::RIGHT:
             normal = glm::vec3(1.0f, 0.0f, 0.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[1], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[2], texCoords.minU, texCoords.minV, normal), // Top-left
-                toVertex(vertices[6], texCoords.maxU, texCoords.minV, normal), // Top-right
+                toVertexWithAO(vertices[1], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[2], texCoords.minU, texCoords.minV, normal),
+                toVertexWithAO(vertices[6], texCoords.maxU, texCoords.minV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[1], texCoords.minU, texCoords.maxV, normal), // Bottom-left
-                toVertex(vertices[6], texCoords.maxU, texCoords.minV, normal), // Top-right
-                toVertex(vertices[5], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
+                toVertexWithAO(vertices[1], texCoords.minU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[6], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[5], texCoords.maxU, texCoords.maxV, normal),
                 0.0f));
             break;
         case FaceType::TOP:
             normal = glm::vec3(0.0f, 1.0f, 0.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[3], texCoords.minU, texCoords.minV, normal), // Top-left
-                toVertex(vertices[7], texCoords.maxU, texCoords.minV, normal), // Top-right
-                toVertex(vertices[6], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
+                toVertexWithAO(vertices[3], texCoords.minU, texCoords.minV, normal),
+                toVertexWithAO(vertices[7], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[6], texCoords.maxU, texCoords.maxV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[3], texCoords.minU, texCoords.minV, normal), // Top-left
-                toVertex(vertices[6], texCoords.maxU, texCoords.maxV, normal), // Bottom-right
-                toVertex(vertices[2], texCoords.minU, texCoords.maxV, normal), // Bottom-left
+                toVertexWithAO(vertices[3], texCoords.minU, texCoords.minV, normal),
+                toVertexWithAO(vertices[6], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[2], texCoords.minU, texCoords.maxV, normal),
                 0.0f));
             break;
         case FaceType::BOTTOM:
             normal = glm::vec3(0.0f, -1.0f, 0.0f);
             triangles.push_back(Triangle(
-                toVertex(vertices[0], texCoords.minU, texCoords.minV, normal), // Bottom-left
-                toVertex(vertices[4], texCoords.maxU, texCoords.minV, normal), // Bottom-right
-                toVertex(vertices[5], texCoords.maxU, texCoords.maxV, normal), // Top-right
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.minV, normal),
+                toVertexWithAO(vertices[4], texCoords.maxU, texCoords.minV, normal),
+                toVertexWithAO(vertices[5], texCoords.maxU, texCoords.maxV, normal),
                 0.0f));
             triangles.push_back(Triangle(
-                toVertex(vertices[0], texCoords.minU, texCoords.minV, normal), // Bottom-left
-                toVertex(vertices[5], texCoords.maxU, texCoords.maxV, normal), // Top-right
-                toVertex(vertices[1], texCoords.minU, texCoords.maxV, normal), // Top-left
+                toVertexWithAO(vertices[0], texCoords.minU, texCoords.minV, normal),
+                toVertexWithAO(vertices[5], texCoords.maxU, texCoords.maxV, normal),
+                toVertexWithAO(vertices[1], texCoords.minU, texCoords.maxV, normal),
                 0.0f));
             break;
     }
@@ -223,4 +228,51 @@ Block Chunk::generateBlock(int x, int y, int z, PerlinNoise& noise) {
     }
 
     return AIR;
+}
+
+
+bool Chunk::isBlockSolid(int x, int y, int z) {
+    BlockType neighborType = getBlockTypeAt(x, y, z);
+    return neighborType != AIR && neighborType != WATER;
+}
+
+float Chunk::calculateAmbientOcclusion(int x, int y, int z, FaceType face) {
+    int occlusionCount = 0;
+
+    // Check direct neighbors based on face direction
+    switch (face) {
+        case FaceType::FRONT:
+            occlusionCount += isBlockSolid(x, y + 1, z + 1); // Top-right
+            occlusionCount += isBlockSolid(x, y - 1, z + 1); // Bottom-right
+            occlusionCount += isBlockSolid(x + 1, y, z + 1); // Right
+            break;
+        case FaceType::BACK:
+            occlusionCount += isBlockSolid(x, y + 1, z - 1); // Top-left
+            occlusionCount += isBlockSolid(x, y - 1, z - 1); // Bottom-left
+            occlusionCount += isBlockSolid(x - 1, y, z - 1); // Left
+            break;
+        case FaceType::LEFT:
+            occlusionCount += isBlockSolid(x - 1, y + 1, z); // Top-left
+            occlusionCount += isBlockSolid(x - 1, y - 1, z); // Bottom-left
+            occlusionCount += isBlockSolid(x - 1, y, z + 1); // Forward
+            break;
+        case FaceType::RIGHT:
+            occlusionCount += isBlockSolid(x + 1, y + 1, z); // Top-right
+            occlusionCount += isBlockSolid(x + 1, y - 1, z); // Bottom-right
+            occlusionCount += isBlockSolid(x + 1, y, z - 1); // Backward
+            break;
+        case FaceType::TOP:
+            occlusionCount += isBlockSolid(x + 1, y + 1, z); // Top-right
+            occlusionCount += isBlockSolid(x - 1, y + 1, z); // Top-left
+            occlusionCount += isBlockSolid(x, y + 1, z + 1); // Forward
+            break;
+        case FaceType::BOTTOM:
+            occlusionCount += isBlockSolid(x + 1, y - 1, z); // Bottom-right
+            occlusionCount += isBlockSolid(x - 1, y - 1, z); // Bottom-left
+            occlusionCount += isBlockSolid(x, y - 1, z - 1); // Backward
+            break;
+    }
+
+    // Normalize occlusion count (0 to 1)
+    return 1.0f - (occlusionCount / 3.0f);
 }

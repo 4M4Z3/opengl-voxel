@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Movement::Movement(Player& player, World& world, float speed, bool gravity)
-    : player(player), world(world), speed(speed), verticalSpeed(speed / 3.0f), gravity(gravity), gravityAcceleration(-9.8f), maxFallSpeed(-50.0f) {}
+    : player(player), world(world), speed(speed), verticalSpeed(speed / 5.0f), gravity(gravity), gravityAcceleration(-9.8f), maxFallSpeed(-50.0f) {}
 
 void Movement::moveForward() {
     glm::vec3 forward = glm::normalize(glm::vec3(
@@ -11,11 +11,7 @@ void Movement::moveForward() {
         0.0f,
         -cos(glm::radians(player.camera.getRotY()))
     ));
-
-    glm::vec3 nextPosition = player.camera.getPosition() + forward * (speed + 0.1f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel += speed * forward;
-    }
+    player.vel += speed * forward;
 }
 
 void Movement::moveBackward() {
@@ -24,11 +20,7 @@ void Movement::moveBackward() {
         0.0f,
         cos(glm::radians(player.camera.getRotY()))
     ));
-
-    glm::vec3 nextPosition = player.camera.getPosition() + backward * (speed + 0.1f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel += speed * backward;
-    }
+    player.vel += speed * backward;
 }
 
 void Movement::moveRight() {
@@ -37,11 +29,7 @@ void Movement::moveRight() {
         0.0f,
         sin(glm::radians(player.camera.getRotY()))
     ));
-
-    glm::vec3 nextPosition = player.camera.getPosition() + right * (speed + 0.1f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel += speed * right;
-    }
+    player.vel += speed * right;
 }
 
 void Movement::moveLeft() {
@@ -50,38 +38,15 @@ void Movement::moveLeft() {
         0.0f,
         -sin(glm::radians(player.camera.getRotY()))
     ));
-
-    glm::vec3 nextPosition = player.camera.getPosition() + left * (speed + 0.1f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel += speed * left;
-    }
+    player.vel += speed * left;
 }
 
 void Movement::moveUp() {
-    glm::vec3 nextPosition = player.camera.getPosition() + glm::vec3(0.0f, verticalSpeed + 0.1f, 0.0f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel.y += verticalSpeed;
-    }
+    player.vel.y += verticalSpeed;
 }
 
 void Movement::moveDown() {
-    glm::vec3 nextPosition = player.camera.getPosition() + glm::vec3(0.0f, -verticalSpeed - 0.1f, 0.0f);
-    if (!checkCollision(nextPosition) && !checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.vel.y -= verticalSpeed;
-    }
-}
-
-bool Movement::isCollidingWithBlock(const glm::vec3& direction) {
-    glm::vec3 nextPosition = player.camera.getPosition() + direction * (speed + 0.1f);
-    return checkCollision(nextPosition) || checkCollision(nextPosition - glm::vec3(0.0f, 1.0f, 0.0f)) || checkCollision(nextPosition - glm::vec3(0.0f, 2.0f, 0.0f));
-}
-
-bool Movement::checkCollision(const glm::vec3& nextPosition) {
-    return !isAirBlock(nextPosition);
-}
-
-bool Movement::isAirBlock(const glm::vec3& position) {
-    return world.getBlock(position.x, position.y, position.z).type == AIR;
+    player.vel.y -= verticalSpeed;
 }
 
 void Movement::lookRight(double dx) {
@@ -110,25 +75,26 @@ void Movement::lookUp(double dy) {
 
 void Movement::updateVectors(float deltaTime) {
     if (gravity) {
+        // Apply gravity force
         player.vel.y += gravityAcceleration * deltaTime;
 
+        // Clamp the fall speed to a maximum terminal velocity
         if (player.vel.y < maxFallSpeed) {
             player.vel.y = maxFallSpeed;
         }
 
+        // Check for ground collision
         bool isOnGround = this->isOnGround();
         if (isOnGround && player.vel.y < 0) {
             player.vel.y = 0.0f;
         }
     }
 
+    // Update position based on velocity
     glm::vec3 newPosition = player.camera.getPosition() + player.vel * deltaTime;
-    if (!checkCollision(newPosition) && !checkCollision(newPosition - glm::vec3(0.0f, 1.0f, 0.0f)) && !checkCollision(newPosition - glm::vec3(0.0f, 2.0f, 0.0f))) {
-        player.camera.setPosition(newPosition);
-    } else {
-        player.vel = glm::vec3(0.0f); 
-    }
+    player.camera.setPosition(newPosition);
 
+    // Apply friction to horizontal movement when on the ground
     if (isOnGround()) {
         float friction = 2.0f;
         player.vel.x -= player.vel.x * friction * deltaTime;
@@ -143,5 +109,6 @@ void Movement::updateVectors(float deltaTime) {
 }
 
 bool Movement::isOnGround() {
-    return world.getBlock(player.camera.getX(), player.camera.getY() - 2, player.camera.getZ()).type != AIR;
+    glm::vec3 position = player.camera.getPosition();
+    return world.getBlock(player.camera.getX(), player.camera.getY()-2, player.camera.getZ()).type != AIR;
 }
