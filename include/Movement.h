@@ -42,8 +42,8 @@ public:
 
     void updateVectors(float deltaTime);
     bool isOnGround();
-    void collisionDetectAndMove(int facing);
-    void groundMove(int direction, int facing);
+    void detectCollision();
+    void groundMove();
 
 private:
     Player& player;

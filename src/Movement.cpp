@@ -7,66 +7,49 @@ Movement::Movement(Player& player, World& world, float speed, bool gravity)
     : player(player), world(world), speed(speed), verticalSpeed(speed / 3.0f), gravity(gravity), gravityAcceleration(-40.0f), maxFallSpeed(-250.0f) {}
 
 void Movement::moveForward() {
-    if (gravity){
-        collisionDetectAndMove(forward);
-    } 
-    else {
-        glm::vec3 forward = glm::normalize(glm::vec3(
-            sin(glm::radians(player.camera.getRotY())),
-            0.0f,
-            -cos(glm::radians(player.camera.getRotY()))
-        ));
-        player.vel += speed * forward;
-    }
+    glm::vec3 forward = glm::normalize(glm::vec3(
+        sin(glm::radians(player.camera.getRotY())),
+        0.0f,
+        -cos(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed / 4 * forward;
+    detectCollision();
+}
+
+void Movement::moveBackward() {
+    glm::vec3 backward = glm::normalize(glm::vec3(
+        -sin(glm::radians(player.camera.getRotY())),
+        0.0f,
+        cos(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed / 4 * backward;
+    detectCollision();
 }
 
 void Movement::moveRight() {
-    if (gravity) {
-        collisionDetectAndMove(right);
-    }
-    else {
-
     glm::vec3 right = glm::normalize(glm::vec3(
         cos(glm::radians(player.camera.getRotY())),
         0.0f,
         sin(glm::radians(player.camera.getRotY()))
     ));
-    player.vel += speed * right;
-    }
-}
-
-void Movement::moveBackward() {
-    if (gravity) {
-        collisionDetectAndMove(backward);
-    }
-    else {
-        glm::vec3 backward = glm::normalize(glm::vec3(
-            -sin(glm::radians(player.camera.getRotY())),
-            0.0f,
-            cos(glm::radians(player.camera.getRotY()))
-        ));
-        player.vel += speed * backward;
-    }
+    player.vel += speed / 4 * right;
+    detectCollision();
 }
 
 void Movement::moveLeft() {
-    if (gravity) {
-        collisionDetectAndMove(left);
-    }
-    else {
-        glm::vec3 left = glm::normalize(glm::vec3(
-            -cos(glm::radians(player.camera.getRotY())),
-            0.0f,
-            -sin(glm::radians(player.camera.getRotY()))
-        ));
-        player.vel += speed * left;
-    }
+    glm::vec3 left = glm::normalize(glm::vec3(
+        -cos(glm::radians(player.camera.getRotY())),
+        0.0f,
+        -sin(glm::radians(player.camera.getRotY()))
+    ));
+    player.vel += speed / 4 * left;
+    detectCollision();
 }
 
 void Movement::moveUp() {
     if (gravity){
         if (isOnGround()){
-        player.vel.y = 16;
+        player.vel.y = 20;
 
         }
     }
@@ -114,6 +97,7 @@ void Movement::lookUp(double dy) {
 
 void Movement::updateVectors(float deltaTime) {
     if (gravity) {
+        detectCollision();
         player.vel.y += gravityAcceleration * deltaTime;
 
         if (player.vel.y < maxFallSpeed) {
@@ -148,95 +132,38 @@ bool Movement::isOnGround() {
     return world.getBlock(player.camera.getX(), player.camera.getY()-2, player.camera.getZ()).type != AIR;
 }
 
-void Movement::collisionDetectAndMove(int facing){
-    bool touchingPosX, touchingPosZ, touchingNegX, touchingNegZ;
-    int result = no_collision;
+void Movement::detectCollision() {
+    float detectionDistance = 0.3f;
 
-    // positive X direction
-    if (world.getBlock(player.camera.getX() + 0.2, player.camera.getY(), player.camera.getZ()).type != AIR
-        || world.getBlock(player.camera.getX() + 0.2, player.camera.getY() - 1, player.camera.getZ()).type != AIR) {
-            touchingPosX = true;
+    // Positive X direction
+    if (world.getBlock(player.camera.getX() + detectionDistance, player.camera.getY(), player.camera.getZ()).type != AIR ||
+        world.getBlock(player.camera.getX() + detectionDistance, player.camera.getY() - 1, player.camera.getZ()).type != AIR) {
+        if (player.vel.x > 0) {
+            player.vel.x = 0;
+        }
     }
 
-    // negative X direction
-    if (world.getBlock(player.camera.getX() - 0.2, player.camera.getY(), player.camera.getZ()).type != AIR
-        || world.getBlock(player.camera.getX() - 0.2, player.camera.getY() - 1, player.camera.getZ()).type != AIR) {
-            touchingNegX = true;
+    // Negative X direction
+    if (world.getBlock(player.camera.getX() - detectionDistance, player.camera.getY(), player.camera.getZ()).type != AIR ||
+        world.getBlock(player.camera.getX() - detectionDistance, player.camera.getY() - 1, player.camera.getZ()).type != AIR) {
+        if (player.vel.x < 0) {
+            player.vel.x = 0;
+        }
     }
 
-    // positive Z direction
-    if (world.getBlock(player.camera.getX(), player.camera.getY(), player.camera.getZ() + 0.2).type != AIR
-        || world.getBlock(player.camera.getX(), player.camera.getY() - 1, player.camera.getZ() + 0.2).type != AIR) {
-            touchingPosZ = true;
+    // Positive Z direction
+    if (world.getBlock(player.camera.getX(), player.camera.getY(), player.camera.getZ() + detectionDistance).type != AIR ||
+        world.getBlock(player.camera.getX(), player.camera.getY() - 1, player.camera.getZ() + detectionDistance).type != AIR) {
+        if (player.vel.z > 0) {
+            player.vel.z = 0;
+        }
     }
 
-    // negative Z direction
-    if (world.getBlock(player.camera.getX(), player.camera.getY(), player.camera.getZ() - 0.2).type != AIR
-        || world.getBlock(player.camera.getX(), player.camera.getY() - 1, player.camera.getZ() - 0.2).type != AIR) {
-            touchingNegZ = true;
+    // Negative Z direction
+    if (world.getBlock(player.camera.getX(), player.camera.getY(), player.camera.getZ() - detectionDistance).type != AIR ||
+        world.getBlock(player.camera.getX(), player.camera.getY() - 1, player.camera.getZ() - detectionDistance).type != AIR) {
+        if (player.vel.z < 0) {
+            player.vel.z = 0;
+        }
     }
-
-    int mask =  (touchingPosX ? 1 : 0) | 
-                (touchingNegX ? 2 : 0) | 
-                (touchingPosZ ? 4 : 0) | 
-                (touchingNegZ ? 8 : 0);
-
-    switch (mask) {
-        case 5: // 0101: touchingPosX + touchingPosZ
-            result = CollisionCase::posXposZ;
-            break;
-        case 9: // 1001: touchingPosX + touchingNegZ
-            result = CollisionCase::posXnegZ;
-            break;
-        case 6: // 0110: touchingNegX + touchingPosZ
-            result = CollisionCase::negXposZ;
-            break;
-        case 10: // 1010: touchingNegX + touchingNegZ
-            result = CollisionCase::negXnegZ;
-            break;
-        case 1: // 0001: touchingPosX only
-            result = CollisionCase::posX;
-            break;
-        case 2: // 0010: touchingNegX only
-            result = CollisionCase::negX;
-            break;
-        case 4: // 0100: touchingPosZ only
-            result = CollisionCase::posZ;
-            break;
-        case 8: // 1000: touchingNegZ only
-            result = CollisionCase::negZ;
-            break;
-        default:
-            result = CollisionCase::no_collision;
-            break;
-    }
-    if (result != no_collision){
-
-    std::cout << "Collision" << std::endl;
-    }
-
-    groundMove((result + facing) % 8, facing);
-    return;
-}
-
-void Movement::groundMove(int direction, int facing) {
-    float speed = 0.5f;
-    glm::vec3 moveVector;
-
-    if (direction == CollisionCase::no_collision) {
-        moveVector = glm::normalize(glm::vec3(
-            sin(glm::radians(player.camera.getRotY() + 90 * facing)),
-            0.0f,
-            -cos(glm::radians(player.camera.getRotY() + 90 * facing))
-        ));
-    } 
-    else {
-        moveVector = glm::normalize(glm::vec3(
-            sin(glm::radians(player.camera.getRotY() + 45 * direction + 180)),
-            0.0f,
-            -cos(glm::radians(player.camera.getRotY() + 45 * direction + 180))
-        ));
-    }
-
-    player.vel += speed * moveVector;
 }

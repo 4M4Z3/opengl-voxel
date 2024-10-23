@@ -277,6 +277,14 @@ int main() {
     float lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
+        std::cout 
+        << world.getBlock(player.camera.getX(),player.camera.getY(),player.camera.getZ()).type << ", "
+           << world.getBlock(player.camera.getX(),player.camera.getY()-1,player.camera.getZ()).type << ", "
+              << world.getBlock(player.camera.getX(),player.camera.getY()-2,player.camera.getZ()).type
+        
+        
+         << std::endl;
+
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
