@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera() : position(0.0f, 70.0f, 0.0f), rotation(0.0f), fov(75.0f) {}
+Camera::Camera() : position(0.0f, 100.0f, 0.0f), rotation(0.0f), fov(75.0f) {}
 
 Camera::Camera(const glm::vec3& position, const glm::vec3& rotation, float fov)
     : position(position), rotation(rotation), fov(fov) {}

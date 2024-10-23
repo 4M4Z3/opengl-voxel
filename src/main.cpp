@@ -289,8 +289,8 @@ int main() {
 
     Camera camera;
     Player player(camera);
-    Movement movement(player, 3.0f);
     World world;
+    Movement movement(player, world, 3.0f, true);
 
     glfwSetWindowUserPointer(window, &movement);
 
