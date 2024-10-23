@@ -167,10 +167,25 @@ in float AmbientOcclusion;
 out vec4 FragColor;
 
 uniform sampler2D ourTexture;
+uniform vec3 lightDir;
+uniform vec3 lightColor;
+uniform vec3 ambientLight;
 
 void main() {
+    // Sample the texture color
     vec4 textureColor = texture(ourTexture, TexCoord);
-    vec3 finalColor = textureColor.rgb * AmbientOcclusion;
+
+    // Ambient Occlusion effect: use the AO value to darken the color at corners
+    float aoEffect = clamp(AmbientOcclusion, 0.0, 1.0);
+
+    // Calculate diffuse lighting based on light direction and surface normal
+    vec3 norm = normalize(Normal);
+    float diffuse = max(dot(norm, -lightDir), 0.0);
+
+    // Calculate the final color using ambient lighting, diffuse, and AO effect
+    vec3 finalColor = (ambientLight + lightColor * diffuse) * textureColor.rgb * aoEffect;
+
+    // Output the final fragment color
     FragColor = vec4(finalColor, textureColor.a);
 }
 )";
@@ -271,6 +286,15 @@ int main() {
         glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
+
+        // Set lighting parameters before rendering
+        glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, -1.0f, 0.5f));
+        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 ambientLight = glm::vec3(0.3f, 0.3f, 0.3f);
+
+        glUniform3fv(glGetUniformLocation(shaderProgram, "lightDir"), 1, glm::value_ptr(lightDir));
+        glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));
+        glUniform3fv(glGetUniformLocation(shaderProgram, "ambientLight"), 1, glm::value_ptr(ambientLight));
 
         // Set fog parameters
         setFogParameters(shaderProgram, camera, world);
