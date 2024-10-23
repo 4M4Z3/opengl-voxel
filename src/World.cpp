@@ -87,7 +87,7 @@ std::vector<Triangle> World::getVisibleTriangles(const Camera& camera) const {
     std::vector<Triangle> visibleTriangles;
     glm::vec3 cameraPosition = camera.getPosition();
     glm::vec3 cameraForward = camera.getForward();
-    float viewDistance = 80.0f;
+    float viewDistance = 100.0f;
 
     std::vector<std::pair<float, const Chunk*>> chunksWithDistance;
     for (const auto& [key, chunk] : chunks) {

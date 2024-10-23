@@ -207,7 +207,7 @@ void Chunk::generateChunk() {
 
 Block Chunk::generateBlock(int x, int y, int z, PerlinNoise& noise) {
     double frequency = 0.01;
-    double surfaceY = 30 + noise.noise2D(x * frequency * 0.4, z * frequency) * 70.0;
+    double surfaceY = 50 + noise.noise2D(x * frequency * 1.4, z * frequency) * 60.0;
     int seaLevel = 40;
 
     if (y < surfaceY - 5) {
