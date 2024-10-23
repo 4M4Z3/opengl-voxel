@@ -1,13 +1,14 @@
 #include "World.h"
 #include <iostream>
+#include <algorithm> // For std::sort
 
 World::World(int seed) {
     this->seed = seed;
-    initializeTextureMap(); 
+    initializeTextureMap();
 
     // Generate chunks
-    for (int x = -10; x < 10; ++x) {
-        for (int z = -10; z < 10; ++z) {
+    for (int x = -8; x < 8; ++x) {
+        for (int z = -8; z < 8; ++z) {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 
@@ -27,11 +28,11 @@ World::World() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, std::numeric_limits<int>::max());
     seed = dis(gen);
-    initializeTextureMap(); 
+    initializeTextureMap();
 
     // Generate chunks
-    for (int x = -12; x < 12; ++x) {
-        for (int z = -12; z < 12; ++z) {
+    for (int x = -8; x < 8; ++x) {
+        for (int z = -15; z < 15; ++z) {
             int chunkX = x * 16;
             int chunkZ = z * 16;
 
@@ -45,13 +46,12 @@ World::World() {
     }
 }
 
-int World::getSeed(){
+int World::getSeed() {
     return seed;
 }
 
 void World::initializeTextureMap() {
     for (int blockType = 0; blockType < sizeof(blockTypeInfos) / sizeof(BlockTypeInfo); ++blockType) {
-        // Skip setting textures for AIR or NULLBLOCK
         if (blockType == AIR || blockType == NULLBLOCK) {
             continue;
         }
@@ -59,15 +59,12 @@ void World::initializeTextureMap() {
             int textureIndex = blockTypeInfos[blockType].textures[face];
             if (textureIndex != -1) {
                 textureMap.setTexture(blockType, static_cast<FaceType>(face), textureIndex);
-            } else {
             }
         }
     }
 }
 
-
-
-Block World::getBlock(int x, int y, int z) {
+Block World::getBlock(int x, int y, int z) const {
     int chunkX = (x < 0 ? ((x + 1) / 16 - 1) * 16 : (x / 16) * 16);
     int chunkZ = (z < 0 ? ((z + 1) / 16 - 1) * 16 : (z / 16) * 16);
 
@@ -86,23 +83,30 @@ Block World::getBlock(int x, int y, int z) {
     return it->second.chunk[localX][y][localZ];
 }
 
-
-
-
 std::vector<Triangle> World::getVisibleTriangles(const Camera& camera) const {
-    std::vector<Triangle> visibleTriangles; 
-    visibleTriangles.clear(); 
-
+    std::vector<Triangle> visibleTriangles;
     glm::vec3 cameraPosition = camera.getPosition();
-    float viewDistance = 150.0f;
+    glm::vec3 cameraForward = camera.getForward();
+    float viewDistance = 80.0f;
 
+    std::vector<std::pair<float, const Chunk*>> chunksWithDistance;
     for (const auto& [key, chunk] : chunks) {
-        glm::vec3 chunkCenter = glm::vec3(key.first + 8, 0, key.second + 8);
+        glm::vec3 chunkCenter = glm::vec3(key.first + 8, 0, key.second + 8); 
+        glm::vec3 toChunk = chunkCenter - cameraPosition;
+        float distance = glm::length(toChunk);
+        if (distance < viewDistance) {
+            float dotProduct = glm::dot(glm::normalize(toChunk), cameraForward);
+            chunksWithDistance.emplace_back(dotProduct, &chunk);
+        }
+    }
 
-        if (glm::distance(cameraPosition, chunkCenter) < viewDistance) {
-            for (const Triangle& tri : chunk.triangles) {
-                visibleTriangles.push_back(tri);
-            }
+    std::sort(chunksWithDistance.begin(), chunksWithDistance.end(), [](const auto& a, const auto& b) {
+        return a.first > b.first; 
+    });
+
+    for (const auto& [dotProduct, chunk] : chunksWithDistance) {
+        for (const Triangle& tri : chunk->triangles) {
+            visibleTriangles.push_back(tri);
         }
     }
 

@@ -11,6 +11,38 @@
 #include "Movement.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <glm/gtc/type_ptr.hpp>
+
+void setFogParameters(unsigned int shaderProgram, const Camera& camera, const World& world) {
+    // Fog parameters
+    glm::vec3 fogColor(0.5f, 0.7f, 1.0f);
+    glm::vec3 underwaterFogColor(0.0f, 0.0f, 0.4f);
+    float fogStart = 10.0f; 
+    float fogEnd = 50.0f;  
+
+    glm::vec3 cameraPos = camera.getPosition();
+    int blockX = static_cast<int>(cameraPos.x);
+    int blockY = static_cast<int>(cameraPos.y);
+    int blockZ = static_cast<int>(cameraPos.z);
+
+    BlockType blockAtCamera = world.getBlock(blockX, blockY, blockZ).type;
+    bool isUnderwater = (blockAtCamera == WATER);
+
+    glm::vec3 activeFogColor = isUnderwater ? underwaterFogColor : fogColor;
+
+    int fogColorLoc = glGetUniformLocation(shaderProgram, "fogColor");
+    glUniform3fv(fogColorLoc, 1, glm::value_ptr(activeFogColor));
+
+    int fogStartLoc = glGetUniformLocation(shaderProgram, "fogStart");
+    glUniform1f(fogStartLoc, fogStart);
+
+    int fogEndLoc = glGetUniformLocation(shaderProgram, "fogEnd");
+    glUniform1f(fogEndLoc, fogEnd);
+
+    int cameraPosLoc = glGetUniformLocation(shaderProgram, "cameraPos");
+    glUniform3fv(cameraPosLoc, 1, glm::value_ptr(cameraPos));
+}
+
 
 unsigned int loadTexture(const char* filepath) {
     unsigned int textureID;
@@ -70,6 +102,19 @@ GLFWwindow* createWindow(int width, int height, const char* title) {
 
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE); // Enable face culling
+    glCullFace(GL_BACK);    // Cull back-facing triangles
+    glFrontFace(GL_CCW);    // Counter-clockwise defines the front face
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
 
     return window;
 }
@@ -92,37 +137,63 @@ unsigned int compileShader(unsigned int type, const char* source) {
 
 unsigned int createShaderProgram() {
     const char* vertexShaderSource = R"(
-        #version 330 core
-        layout(location = 0) in vec3 aPos;
-        layout(location = 1) in vec3 aColor;
-        layout(location = 2) in vec2 aTexCoord;
+// Vertex Shader
+#version 330 core
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec3 aColor;
+layout(location = 2) in vec2 aTexCoord;
 
-        out vec3 ourColor;
-        out vec2 TexCoord;
+out vec2 TexCoord;
+out vec3 FragPos; // Pass fragment position to the fragment shader
 
-        uniform mat4 view;
-        uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 model;
 
-        void main() {
-            gl_Position = projection * view * vec4(aPos, 1.0);
-            ourColor = aColor;
-            TexCoord = aTexCoord;
-        }
+void main() {
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    TexCoord = aTexCoord;
+    FragPos = vec3(model * vec4(aPos, 1.0)); // Calculate world position
+}
 
     )";
 
     const char* fragmentShaderSource = R"(
+// Fragment Shader
 #version 330 core
-in vec3 ourColor;
 in vec2 TexCoord;
+in vec3 FragPos;
 
 out vec4 FragColor;
 
 uniform sampler2D ourTexture;
+uniform vec3 fogColor;              // The fog color above water
+uniform vec3 underwaterFogColor;    // The fog color underwater
+uniform float fogStart;             // Distance where fog starts
+uniform float fogEnd;               // Distance where fog is fully opaque
+uniform vec3 cameraPos;             // Position of the camera in world space
+uniform float waterLevel;           // Y level of the water surface
 
 void main() {
     vec4 textureColor = texture(ourTexture, TexCoord);
-    FragColor = textureColor * vec4(ourColor, 1.0);
+
+    // Check if the camera is underwater
+    bool isUnderwater = cameraPos.y < waterLevel;
+
+    // Choose the fog color based on whether the camera is underwater
+    vec3 activeFogColor = isUnderwater ? underwaterFogColor : fogColor;
+
+    // Calculate the distance from the camera to the fragment
+    float distance = length(cameraPos - FragPos);
+
+    // Calculate the fog factor (0.0 - no fog, 1.0 - full fog)
+    float fogFactor = clamp((distance - fogStart) / (fogEnd - fogStart), 0.0, 1.0);
+
+    // Mix the texture color with the active fog color based on the fog factor
+    vec3 finalColor = mix(textureColor.rgb, activeFogColor, fogFactor);
+
+    // Output the final color with the original texture alpha
+    FragColor = vec4(finalColor, textureColor.a);
 }
 
     )";
@@ -211,52 +282,47 @@ int main() {
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetWindowFocusCallback(window, windowFocusCallback);
 
-    glEnable(GL_DEPTH_TEST);
-
     Renderer renderer(camera, &world);
 
     unsigned int shaderProgram = createShaderProgram();
     unsigned int textureID = loadTexture("assets/atlas.png");
 
-    glfwSetCursorPos(window, 1400 / 2, 800 / 2);
+    glfwSetCursorPos(window, 1100 / 2, 800 / 2);
 
     float lastTime = glfwGetTime();
 
-    while (!glfwWindowShouldClose(window)) {
-        float currentTime = glfwGetTime();
-        float deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
+while (!glfwWindowShouldClose(window)) {
+    float currentTime = glfwGetTime();
+    float deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shaderProgram);
-        glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(shaderProgram);
+    glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
-        renderer.render(shaderProgram, window);
+    // Set fog parameters
+    setFogParameters(shaderProgram, camera, world);
 
-        if (keyStates[GLFW_KEY_W]) movement.moveForward();
-        if (keyStates[GLFW_KEY_A]) movement.moveLeft();
-        if (keyStates[GLFW_KEY_S]) movement.moveBackward();
-        if (keyStates[GLFW_KEY_D]) movement.moveRight();
-        if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
-        if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
+    glm::mat4 model = glm::mat4(1.0f);
+    int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-        // std::cout << "(" << player.camera.getX() << ", " << player.camera.getY() << ", " << player.camera.getZ() << ")" << std::endl;
-        // std::cout << world.getBlock((int)player.camera.getX(),(int)player.camera.getY(), (int)player.camera.getZ()).type << std::endl;
-        
-        // int textureIndex = 5;
-        // TextureCoords coords = textureMap.calculateCoords(textureIndex);
+    renderer.render(shaderProgram, window);
 
-        // std::cout << "minU: " << coords.minU << ", maxU: " << coords.maxU << std::endl;
-        // std::cout << "minV: " << coords.minV << ", maxV: " << coords.maxV << std::endl;
+    if (keyStates[GLFW_KEY_W]) movement.moveForward();
+    if (keyStates[GLFW_KEY_A]) movement.moveLeft();
+    if (keyStates[GLFW_KEY_S]) movement.moveBackward();
+    if (keyStates[GLFW_KEY_D]) movement.moveRight();
+    if (keyStates[GLFW_KEY_SPACE]) movement.moveUp();
+    if (keyStates[GLFW_KEY_LEFT_SHIFT] || keyStates[GLFW_KEY_RIGHT_SHIFT]) movement.moveDown();
 
+    movement.updateVectors(deltaTime);
 
-        movement.updateVectors(deltaTime);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
 
     glDeleteProgram(shaderProgram);
     glfwDestroyWindow(window);

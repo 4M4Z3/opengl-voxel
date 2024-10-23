@@ -26,6 +26,16 @@ void Camera::setRotation(const glm::vec3& rotation) {
     this->rotation = rotation;
 }
 
+glm::vec3 Camera::getForward() const {
+    float yaw = glm::radians(rotation.y);
+    return glm::normalize(glm::vec3(
+        sin(yaw),
+        0.0f,
+        -cos(yaw)
+    ));
+}
+
+
 void Camera::setFOV(float fov) {
     this->fov = fov;
 }

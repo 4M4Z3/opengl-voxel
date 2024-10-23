@@ -14,22 +14,26 @@ class World;
 class Chunk {
 public:
     Chunk(int xOffset, int zOffset, World& world);
+    
+    // Public methods
     bool isBlockAirOrOutOfBounds(int x, int y, int z);
-
     void initializeMesh(); 
     void generateChunk();
-
     Block getBlock(int x, int y, int z) const;
+
+    // Chunk data
     Block chunk[16][256][16];
     std::vector<Triangle> triangles;
     World& world; 
 
 private:
-    int xOffset, zOffset; 
+    int xOffset, zOffset;
 
+    // Helper methods
     void addFaceTriangles(glm::vec3* vertices, FaceType face, int neighborX, int neighborY, int neighborZ, Block block);
-
     Block generateBlock(int x, int y, int z, PerlinNoise& noise);
+    bool shouldRenderFace(BlockType currentBlockType, int x, int y, int z);
+    BlockType getBlockTypeAt(int x, int y, int z);
 };
 
 #endif // CHUNK_H

@@ -34,6 +34,8 @@ public:
     float getRotX() const;
     float getRotY() const;
 
+    glm::vec3 getForward() const;
+
 private:
     glm::vec3 position;
     glm::vec3 rotation; // Pitch (X), Yaw (Y), Roll (Z)

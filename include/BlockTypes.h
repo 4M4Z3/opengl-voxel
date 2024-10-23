@@ -15,9 +15,11 @@ enum FaceType {
 };
 
 struct BlockTypeInfo {
-    int textures[6]; // Array to hold texture indices for each face
+    int textures[6];
     MeshType meshType;
+    bool isTransparent; 
 };
+
 
 enum BlockType {
     NULLBLOCK = -1,
@@ -31,14 +33,13 @@ enum BlockType {
 };
 
 const BlockTypeInfo blockTypeInfos[] = {
-    { { -1, -1, -1, -1, -1, -1 }, MeshType::CUBE }, // AIR (should not render)
-    { { 1, 1, 1, 1, 1, 1 }, MeshType::CUBE },       // STONE
-    { { 2, 2, 2, 2, 2, 2 }, MeshType::CUBE },       // DIRT
-    { { 3, 3, 3, 3, 0, 3 }, MeshType::CUBE },       // GRASS
-    { { 195, 195, 195, 195, 195, 195 }, MeshType::CUBE }, // WATER
-    { { 20, 20, 20, 20, 21, 21 }, MeshType::CUBE }, // WOOD
-    { { 52, 52, 52, 52, 52, 52 }, MeshType::CUBE }, // LEAVES
+    { { -1, -1, -1, -1, -1, -1 }, MeshType::CUBE, true },  // AIR (should not render)
+    { { 1, 1, 1, 1, 1, 1 }, MeshType::CUBE, false },       // STONE
+    { { 2, 2, 2, 2, 2, 2 }, MeshType::CUBE, false },       // DIRT
+    { { 3, 3, 3, 3, 0, 3 }, MeshType::CUBE, false },       // GRASS
+    { { 207, 207, 207, 207, 207, 207 }, MeshType::CUBE, true }, // WATER
+    { { 20, 20, 20, 20, 21, 21 }, MeshType::CUBE, false }, // WOOD
+    { { 52, 52, 52, 52, 52, 52 }, MeshType::CUBE, true },  // LEAVES
 };
-
 
 #endif // BLOCKTYPES_H
