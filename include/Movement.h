@@ -7,6 +7,25 @@
 
 class Movement {
 public:
+    enum CollisionCase {
+        no_collision = -1,
+        posX,
+        posZ,
+        negX,
+        negZ,
+        posXposZ,
+        posXnegZ,
+        negXposZ,
+        negXnegZ
+    };
+
+    enum Direction {
+        forward = 0,
+        right,
+        backward,
+        left,
+    };
+
     Movement(Player& player, World& world, float speed, bool gravity);
 
     void moveForward();
@@ -23,6 +42,8 @@ public:
 
     void updateVectors(float deltaTime);
     bool isOnGround();
+    void collisionDetectAndMove(int facing);
+    void groundMove(int direction, int facing);
 
 private:
     Player& player;
@@ -32,9 +53,6 @@ private:
     bool gravity;
     float gravityAcceleration = -9.8f;
     float maxFallSpeed = -50.0f;
-    bool isCollidingWithBlock(const glm::vec3& direction);
-    bool checkCollision(const glm::vec3& nextPosition);
-    bool isAirBlock(const glm::vec3& position);
 };
 
 #endif // MOVEMENT_H
